@@ -1,8 +1,4 @@
 __pycache__/
-uploads/
+tmp_uploads/
 .env
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
