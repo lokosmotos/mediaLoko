@@ -1,32 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Receipt Results</title>
+    <title>Receipt Data</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .receipt-image { max-width: 100%; border: 1px solid #ddd; margin-bottom: 20px; }
-        .text-output { background: #f5f5f5; padding: 15px; border-radius: 5px; }
-        .info-box { background: #e9f7fe; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .error { color: red; }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+        pre { background: #f5f5f5; padding: 10px; }
     </style>
 </head>
 <body>
     <h1>Extracted Receipt Data</h1>
-    
-    <div class="info-box">
-        <h3>Key Information:</h3>
-        <p><strong>Total Price:</strong> {{ data.total_price }}</p>
-        <p><strong>Date:</strong> {{ data.date }}</p>
-        {% if data.error %}
-            <p class="error">Processing error: {{ data.error }}</p>
-        {% endif %}
-    </div>
-    
-    <h3>Extracted Text:</h3>
-    <div class="text-output">
-        <pre>{{ data.text }}</pre>
-    </div>
-    
-    <a href="{{ url_for('index') }}">Process another receipt</a>
+    <p><strong>Total Price:</strong> {{ data.total_price }}</p>
+    <p><strong>Date:</strong> {{ data.date }}</p>
+    <h3>Full Text:</h3>
+    <pre>{{ data.text }}</pre>
+    <a href="/">Upload Another</a>
 </body>
 </html>
