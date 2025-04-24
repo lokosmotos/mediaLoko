@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -48,7 +48,13 @@ def upload_receipt():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return f'File uploaded: {filename}'
+    # Render the uploaded file page, show download link
+    return render_template('uploaded_file.html', filename=filename)
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    # This will send the file from the upload folder to the user for download
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/dashboard')
 def dashboard():
