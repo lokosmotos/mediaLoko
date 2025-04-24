@@ -6,7 +6,8 @@ RUN apt-get update && \
     tesseract-ocr \
     libtesseract-dev \
     libleptonica-dev \
-    tesseract-ocr-eng && \
+    tesseract-ocr-eng \
+    tesseract-ocr-all && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
