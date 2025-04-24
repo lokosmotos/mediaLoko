@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt Processor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .alert { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .alert-error { background: #ffebee; color: #c62828; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; }
+        form { margin: 20px 0; }
+        pre { background: #f5f5f5; padding: 15px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% block content %}{% endblock %}
+</body>
+</html>
