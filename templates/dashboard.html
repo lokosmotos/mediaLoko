@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - My App</title>
+    <title>Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #34495e;
+            background-color: #2c3e50;
             color: white;
             text-align: center;
             padding: 50px;
@@ -16,7 +16,7 @@
             color: #ecf0f1;
         }
         .btn {
-            background-color: #e74c3c;
+            background-color: #3498db;
             color: white;
             padding: 10px 20px;
             text-decoration: none;
@@ -24,15 +24,17 @@
             font-size: 18px;
         }
         .btn:hover {
-            background-color: #c0392b;
+            background-color: #2980b9;
         }
     </style>
 </head>
 <body>
 
-    <h1>Welcome to the Dashboard!</h1>
-    <p>This is where your data or content would be displayed.</p>
-    <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+    <h1>Welcome to Your Dashboard</h1>
+    <p>Here you can see the status of your uploaded files and other data.</p>
+    <a href="{{ url_for('upload_receipt') }}" class="btn">Go to Upload</a>
+    <br><br>
+    <a href="{{ url_for('index') }}" class="btn">Go to Home</a>
 
 </body>
 </html>
