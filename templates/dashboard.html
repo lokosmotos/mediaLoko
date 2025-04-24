@@ -2,14 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - My App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #34495e;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #ecf0f1;
+        }
+        .btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Welcome, {{ username }}</h2>
-        <p>This is your secure dashboard.</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+
+    <h1>Welcome to the Dashboard!</h1>
+    <p>This is where your data or content would be displayed.</p>
+    <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+
 </body>
 </html>
