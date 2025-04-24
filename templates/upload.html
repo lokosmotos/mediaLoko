@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Receipt</title>
+    <title>Receipt Processor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .error { color: red; }
+        .upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; }
+    </style>
 </head>
-<body style="background: #121212; color: white;">
-    <h1>Upload Your Receipt</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="receipt" required>
-        <input type="submit" value="Upload">
+<body>
+    <h1>Upload Receipt</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data" action="/upload">
+        <div class="upload-box">
+            <input type="file" name="receipt" accept="image/*" required>
+            <p>Supported formats: PNG, JPG, JPEG, GIF</p>
+            <p>Max size: 5MB</p>
+        </div>
+        <button type="submit">Process Receipt</button>
     </form>
 </body>
 </html>
