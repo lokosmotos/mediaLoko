@@ -1,11 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
-import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to a secure key
+app.secret_key = 'your_secret_key_here'  # Change this in production
 
+# --- DB Setup ---
+def init_db():
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# --- User Helpers ---
 def get_user(username):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
@@ -14,6 +29,7 @@ def get_user(username):
     conn.close()
     return user
 
+# --- Routes ---
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -38,6 +54,21 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
+# --- TEMP: Create user once ---
+@app.route('/create-admin')
+def create_admin():
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (
+            'admin', generate_password_hash('password123')
+        ))
+        conn.commit()
+        msg = "Admin user created!"
+    except sqlite3.IntegrityError:
+        msg = "Admin user already exists."
+    conn.close()
+    return msg
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True)
