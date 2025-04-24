@@ -1,20 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Receipt</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; }
-        .error { color: red; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
     <h1>Upload Receipt</h1>
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="receipt" accept="image/*" required>
-        <button type="submit">Process</button>
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+        <input type="file" name="receipt" accept="image/*,.pdf" required>
+        <button type="submit">Process Receipt</button>
     </form>
-</body>
-</html>
+{% endblock %}
