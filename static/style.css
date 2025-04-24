@@ -1,45 +1,44 @@
 body {
     background-color: #121212;
-    color: white;
+    color: #ffffff;
     font-family: Arial, sans-serif;
-    display: flex;
-    height: 100vh;
-    justify-content: center;
-    align-items: center;
-}
-
-.login-box, .dashboard-box {
-    background-color: #1f1f1f;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
     text-align: center;
+    padding-top: 100px;
 }
 
-input[type="text"], input[type="password"] {
-    width: 80%;
-    padding: 10px;
+.container {
+    background-color: #1e1e1e;
+    padding: 30px;
+    border-radius: 10px;
+    width: 300px;
+    margin: auto;
+    box-shadow: 0 0 15px #000;
+}
+
+input, button {
+    width: 90%;
     margin: 10px 0;
-    background: #2c2c2c;
+    padding: 10px;
     border: none;
-    color: white;
     border-radius: 5px;
+}
+
+input {
+    background-color: #2a2a2a;
+    color: white;
 }
 
 button {
-    padding: 10px 20px;
-    background-color: #007BFF;
-    border: none;
+    background-color: #3a3a3a;
     color: white;
-    border-radius: 5px;
     cursor: pointer;
 }
 
-a {
-    color: #00bfff;
-    text-decoration: none;
+button:hover {
+    background-color: #555;
 }
 
 .error {
     color: red;
+    font-size: 14px;
 }
