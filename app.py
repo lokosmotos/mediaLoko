@@ -29,7 +29,20 @@ def burn_subtitles(video_path, srt_path, output_path):
         '-c:a', 'copy',
         output_path
     ]
-    subprocess.run(command, check=True)
+
+    try:
+        # Capture stdout and stderr
+        result = subprocess.run(command, check=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("FFmpeg output:", result.stdout)
+        print("FFmpeg errors:", result.stderr)
+    except subprocess.CalledProcessError as e:
+        print("FFmpeg failed!")
+        print("Command:", e.cmd)
+        print("Return code:", e.returncode)
+        print("Output:", e.output)
+        print("Error:", e.stderr)
+        raise RuntimeError(f"FFmpeg error: {e.stderr}")
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
