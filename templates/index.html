@@ -1,1 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subtitle Burner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>🔥 Burn Subtitles Into Video</h1>
+    <form method="POST" enctype="multipart/form-data">
+      <label>Upload Video (.mp4):</label><br>
+      <input type="file" name="video" accept="video/mp4" required><br><br>
+
+      <label>Upload Subtitles (.srt):</label><br>
+      <input type="file" name="srt" accept=".srt" required><br><br>
+
+      <button type="submit">Burn Subtitles</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>
 
