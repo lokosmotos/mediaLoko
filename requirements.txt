@@ -4,4 +4,4 @@ ffmpeg-python
 gunicorn
 pytesseract
 Pillow
-
+python-dotenv
