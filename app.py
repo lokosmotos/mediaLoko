@@ -50,6 +50,11 @@ def upload_receipt():
 def uploaded_file(filename):
     return f'File uploaded: {filename}'
 
+@app.route('/dashboard')
+def dashboard():
+    # Simple dashboard for now
+    return render_template('dashboard.html')
+
 # --- Running the App ---
 if __name__ == '__main__':
     app.run(debug=True)
