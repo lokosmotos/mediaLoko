@@ -1,1 +1,4 @@
+Flask
+Werkzeug
+ffmpeg-python
 
