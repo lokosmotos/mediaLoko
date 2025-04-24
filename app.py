@@ -19,8 +19,19 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Tesseract configuration for Render
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+# Tesseract configuration - works for both local and Render
+try:
+    # Try Render path first
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+    pytesseract.get_tesseract_version()  # Test the installation
+except:
+    try:
+        # Fallback to local path
+        pytesseract.pytesseract.tesseract_cmd = 'tesseract'
+        pytesseract.get_tesseract_version()
+    except:
+        print("Warning: Tesseract not found. OCR functionality will not work.")
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
@@ -84,6 +95,10 @@ def upload():
 @app.errorhandler(413)
 def request_entity_too_large(error):
     return render_template('upload.html', error="File too large (max 5MB)"), 413
+
+@app.route('/healthcheck')
+def healthcheck():
+    return "OK", 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
