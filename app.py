@@ -43,6 +43,27 @@ def burn_subtitles(video_path, srt_path, output_path):
         print("Error:", e.stderr)
         raise RuntimeError(f"FFmpeg error: {e.stderr}")
 
+import threading
+
+def background_ffmpeg(video_path, srt_path, output_path):
+    try:
+        command = [
+            'ffmpeg',
+            '-i', video_path,
+            '-vf', f'subtitles={srt_path}',
+            '-c:a', 'copy',
+            output_path
+        ]
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except subprocess.CalledProcessError as e:
+        print("FFmpeg failed:", e.stderr)
+
+@app.route('/', methods=['POST'])
+def index():
+    # ... your file saving logic ...
+    threading.Thread(target=background_ffmpeg, args=(video_path, srt_path, output_path)).start()
+    return "Processing started"
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
