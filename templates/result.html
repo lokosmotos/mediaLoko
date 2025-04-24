@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt Result</title>
+</head>
+<body style="background: #121212; color: white;">
+    <h1>Receipt Analysis</h1>
+    <p><strong>Total Price:</strong> {{ data.total_price }}</p>
+    <p><strong>Date Found:</strong> {{ data.date }}</p>
+    <h3>Full Text:</h3>
+    <pre>{{ data.text }}</pre>
+    <a href="{{ url_for('uploaded_file', filename=filename) }}" style="color: #00f;">Download Original</a>
+</body>
+</html>
