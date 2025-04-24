@@ -1,4 +1,1 @@
-__pycache__/
-tmp_uploads/
-.env
-*.pyc
+SECRET_KEY=your-secret-key-here
