@@ -5,3 +5,5 @@ gunicorn
 pytesseract
 Pillow
 python-dotenv
+pytesseract==0.3.10
+tesseract==0.1.3
