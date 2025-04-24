@@ -36,6 +36,10 @@ def upload_receipt():
 def uploaded_file(filename):
     return f'File uploaded: {filename}'
 
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
