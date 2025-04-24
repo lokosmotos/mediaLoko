@@ -2,4 +2,6 @@ Flask
 Werkzeug
 ffmpeg-python
 gunicorn
+pytesseract
+Pillow
 
