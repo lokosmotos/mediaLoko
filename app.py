@@ -3,6 +3,7 @@ import uuid
 from flask import Flask, request, render_template, send_from_directory, redirect, url_for, flash
 import subprocess
 from werkzeug.utils import secure_filename
+import threading
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -43,8 +44,7 @@ def burn_subtitles(video_path, srt_path, output_path):
         print("Error:", e.stderr)
         raise RuntimeError(f"FFmpeg error: {e.stderr}")
 
-import threading
-
+# Background thread function for FFmpeg processing
 def background_ffmpeg(video_path, srt_path, output_path):
     try:
         command = [
@@ -58,13 +58,7 @@ def background_ffmpeg(video_path, srt_path, output_path):
     except subprocess.CalledProcessError as e:
         print("FFmpeg failed:", e.stderr)
 
-@app.route('/', methods=['POST'])
-def index():
-    # ... your file saving logic ...
-    threading.Thread(target=background_ffmpeg, args=(video_path, srt_path, output_path)).start()
-    return "Processing started"
-
-
+# Main route for file uploads and video processing
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -101,17 +95,20 @@ def index():
         video.save(video_path)
         srt.save(srt_path)
 
-        try:
-            # Burn subtitles into the video
-            burn_subtitles(video_path, srt_path, output_path)
-        except Exception as e:
-            flash(f"Error: {e}")
-            return redirect(url_for('index'))
+        # Start background thread to process video
+        threading.Thread(target=background_ffmpeg, args=(video_path, srt_path, output_path)).start()
 
-        # Send the output file for download
-        return send_from_directory(app.config['UPLOAD_FOLDER'], output_filename, as_attachment=True)
+        # Inform the user that processing has started
+        flash("Processing started, please wait for the download link.")
+
+        return render_template('index.html', filename=output_filename)
 
     return render_template('index.html')
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
