@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
 )
 ''')
 
-username = input("Enter username: ")
-password = input("Enter password: ")
+username = input("Dan ")
+password = input("032989 ")
 hashed_password = generate_password_hash(password)
 
 cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
