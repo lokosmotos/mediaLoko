@@ -2,37 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - My App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 50px;
-        }
-        h1 {
-            color: #ecf0f1;
-        }
-        .btn {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 18px;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-    </style>
+    <title>SRT Aligner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <div class="container">
+        <h1><i class="fas fa-language"></i> Bilingual Subtitle Aligner</h1>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="upload-box">
+                <input type="file" name="en_srt" accept=".srt" required>
+                <span>English SRT</span>
+            </div>
+            
+            <div class="upload-box">
+                <input type="file" name="zh_srt" accept=".srt" required>
+                <span>Chinese SRT</span>
+            </div>
+            
+            <button type="submit">
+                <i class="fas fa-robot"></i> Auto-Align
+            </button>
+        </form>
+        
+        <div id="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>Analyzing subtitles...</p>
+        </div>
+    </div>
 
-    <h1>Welcome to My App!</h1>
-    <p>This is the homepage.</p>
-    <a href="{{ url_for('dashboard') }}" class="btn">Go to Dashboard</a>
-
+    <script src="/static/script.js"></script>
 </body>
 </html>
