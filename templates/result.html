@@ -1,15 +1,18 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <h1>Receipt Analysis</h1>
-    
-    <div style="margin: 20px 0;">
-        <p><strong>Total Amount:</strong> {{ data.total_price }}</p>
-        <p><strong>Date:</strong> {{ data.date }}</p>
+<div class="results">
+    <h2><i class="fas fa-check-circle"></i> Alignment Results</h2>
+    <div class="summary">
+        <span>Confidence: <span id="avgConfidence">0%</span></span>
+        <span>Aligned: <span id="alignedCount">0</span>/<span id="totalCount">0</span></span>
     </div>
     
-    <h3>Extracted Text:</h3>
-    <pre>{{ data.text }}</pre>
-    
-    <a href="{{ url_for('index') }}">Process Another Receipt</a>
-{% endblock %}
+    <div class="subtitle-list">
+        {% for sub in results %}
+        <div class="subtitle {% if sub.confidence < 70 %}low-confidence{% endif %}">
+            <div class="time">{{ sub.start }} → {{ sub.end }}</div>
+            <div class="confidence">Confidence: {{ sub.confidence }}%</div>
+            <div class="text en">{{ sub.en_text }}</div>
+            <div class="text zh">{{ sub.zh_text }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
