@@ -154,3 +154,22 @@ def index():
 if __name__ == '__main__':
     os.makedirs('uploads', exist_ok=True)
     app.run(host='0.0.0.0', port=5000)
+        
+        # Create output Excel
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='cleaned_filenames.xlsx'
+        )
+    
+    return render_template_string(HTML_TEMPLATE)
+
+if __name__ == '__main__':
+    os.makedirs('uploads', exist_ok=True)
+    app.run(host='0.0.0.0', port=5000)
