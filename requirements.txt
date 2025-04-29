@@ -1,8 +1,0 @@
-numpy==1.23.5  # Stable version known to work with spaCy
-spacy==3.5.0
-thinc==8.1.10
-blis==0.7.9
-flask==2.0.3
-werkzeug==2.0.3
-gunicorn
-sentence-transformers
