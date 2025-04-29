@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filename Cleaner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+    }
+    .tab button:hover {
+      background-color: #ddd;
+    }
+    .tab button.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .tabcontent {
+      display: none;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .preview {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Windows Filename Cleaner</h1>
+  
+  <div class="tab">
+    <button class="tablinks active" onclick="openTab(event, 'inputTab')">Input Names</button>
+    <button class="tablinks" onclick="openTab(event, 'uploadTab')">Upload Excel</button>
+  </div>
+  
+  <div id="inputTab" class="tabcontent" style="display: block;">
+    <h2>Enter Filenames</h2>
+    <p>Enter one filename per line:</p>
+    <textarea id="filenameInput" placeholder="Original filename 1.txt&#10;File#2?.jpg&#10;Another*file.pdf"></textarea>
+    <button onclick="cleanInputNames()">Clean Names</button>
+    <div id="inputPreview" class="preview"></div>
+  </div>
+  
+  <div id="uploadTab" class="tabcontent">
+    <h2>Upload Excel File</h2>
+    <p>Upload an Excel file containing filenames (first column will be used):</p>
+    <input type="file" id="excelUpload" accept=".xlsx,.xls" />
+    <button onclick="uploadExcel()">Process File</button>
+    <div id="uploadPreview" class="preview"></div>
+  </div>
 
+  <script>
+    function openTab(evt, tabName) {
+      const tabcontent = document.getElementsByClassName("tabcontent");
+      for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      
+      const tablinks = document.getElementsByClassName("tablinks");
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+    
+    function cleanInputNames() {
+      const input = document.getElementById('filenameInput').value;
+      const names = input.split('\n').filter(name => name.trim() !== '');
+      
+      fetch('/api/clean-names', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ names }),
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.blob();
+      })
+      .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cleaned_names.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing names');
+      });
+    }
+    
+    function uploadExcel() {
+      const fileInput = document.getElementById('excelUpload');
+      if (fileInput.files.length === 0) {
+        alert('Please select a file first');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      
+      fetch('/api/upload-excel', {
+        method: 'POST',
+        body: formData,
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.blob();
+      })
+      .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cleaned_names.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing file');
+      });
+    }
+  </script>
+</body>
+</html>
