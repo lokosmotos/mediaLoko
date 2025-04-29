@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
 
-# HTML Template with row 7 start and A-Z column selection
+# HTML Template with sheet selection and A-Z column selection
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,8 +104,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <input type="file" id="file" name="file" accept=".xlsx,.xls">
             </div>
             
-            <!-- Column Selector (hidden initially) -->
-            <div id="column-selector" class="hidden">
+            <!-- Sheet and Column Selectors (hidden initially) -->
+            <div id="excel-selectors" class="hidden">
+                <div class="form-group">
+                    <label for="sheet"><i class="fas fa-table icon"></i> Select Sheet</label>
+                    <select id="sheet" name="sheet"></select>
+                </div>
                 <div class="form-group">
                     <label for="column"><i class="fas fa-columns icon"></i> Select Column (A-Z)</label>
                     <select id="column" name="column">
@@ -126,28 +130,48 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     <script>
-        // Show column selector when file is selected
+        // Show selectors when file is selected
         document.getElementById('file').addEventListener('change', function(e) {
-            const selector = document.getElementById('column-selector');
+            const selectors = document.getElementById('excel-selectors');
             if (this.files.length) {
-                selector.classList.remove('hidden');
+                selectors.classList.remove('hidden');
                 
-                // Populate column selector with A-Z
-                const columnSelect = document.getElementById('column');
-                columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+                const file = this.files[0];
+                const reader = new FileReader();
                 
-                for (let i = 0; i < 26; i++) {
-                    const letter = String.fromCharCode(65 + i); // A-Z
-                    const option = document.createElement('option');
-                    option.value = letter;
-                    option.textContent = `Column ${letter}`;
-                    columnSelect.appendChild(option);
-                }
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Populate sheet selector
+                    const sheetSelect = document.getElementById('sheet');
+                    sheetSelect.innerHTML = '';
+                    workbook.SheetNames.forEach(sheet => {
+                        const option = document.createElement('option');
+                        option.value = sheet;
+                        option.textContent = sheet;
+                        sheetSelect.appendChild(option);
+                    });
+                    
+                    // Populate column selector with A-Z
+                    const columnSelect = document.getElementById('column');
+                    columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
+                    for (let i = 0; i < 26; i++) {
+                        const letter = String.fromCharCode(65 + i); // A-Z
+                        const option = document.createElement('option');
+                        option.value = letter;
+                        option.textContent = `Column ${letter}`;
+                        columnSelect.appendChild(option);
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
             } else {
-                selector.classList.add('hidden');
+                selectors.classList.add('hidden');
             }
         });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>"""
 
@@ -169,12 +193,13 @@ def index():
         elif 'file' in request.files:
             file = request.files['file']
             if file.filename:
-                # Read the Excel file starting from row 7
+                # Read the Excel file
                 wb = openpyxl.load_workbook(file, read_only=True)
-                sheet = wb.active
                 
-                # Get selected column letter (A-Z)
+                # Get selected sheet and column
+                sheet_name = request.form.get('sheet')
                 col_letter = request.form.get('column', 'A')
+                sheet = wb[sheet_name] if sheet_name else wb.active
                 col_index = openpyxl.utils.column_index_from_string(col_letter) - 1
                 
                 # Read data from column starting at row 7
