@@ -2,10 +2,11 @@ import os
 from flask import Flask, request, send_file, render_template_string
 import pandas as pd
 from io import BytesIO
+import openpyxl
 
 app = Flask(__name__)
 
-# HTML Template - properly terminated with all content
+# HTML Template with sheet and column selection
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,25 +15,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <title>Windows Filename Cleaner</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --light-bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #2b2d42;
+        }
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--light-bg);
             min-height: 100vh;
             padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            color: var(--text);
         }
         .container {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         h1 {
-            color: #4361ee;
+            color: var(--primary);
             text-align: center;
             margin-bottom: 1.5rem;
         }
@@ -44,105 +49,196 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 0.5rem;
             font-weight: 500;
         }
-        input[type="file"], textarea, select {
+        input, select, textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 6px;
+            font-size: 1rem;
         }
         textarea {
-            min-height: 120px;
+            min-height: 150px;
+            resize: vertical;
         }
         button {
-            background: #4361ee;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
+            padding: 1rem;
             border-radius: 6px;
-            width: 100%;
+            font-size: 1rem;
             cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .selectors {
+            display: flex;
+            gap: 1rem;
+        }
+        .selectors > div {
+            flex: 1;
+        }
+        .hidden {
+            display: none;
+        }
+        .icon {
+            margin-right: 8px;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-file-excel"></i> Filename Cleaner</h1>
+        <h1><i class="fas fa-file-excel icon"></i> Windows Filename Cleaner</h1>
+        
         <form method="post" enctype="multipart/form-data">
+            <!-- File Upload Section -->
             <div class="form-group">
-                <label><i class="fas fa-file-upload"></i> Upload Excel File</label>
-                <input type="file" name="file" accept=".xlsx,.xls">
+                <label for="file"><i class="fas fa-file-upload icon"></i> Upload Excel File</label>
+                <input type="file" id="file" name="file" accept=".xlsx,.xls">
             </div>
-            <div class="form-group" id="column-selector" style="display:none;">
-                <label><i class="fas fa-columns"></i> Select Column</label>
-                <select name="column"></select>
+            
+            <!-- Sheet and Column Selectors (hidden initially) -->
+            <div id="excel-selectors" class="hidden">
+                <div class="selectors">
+                    <div class="form-group">
+                        <label for="sheet"><i class="fas fa-table icon"></i> Select Sheet</label>
+                        <select id="sheet" name="sheet"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="column"><i class="fas fa-columns icon"></i> Select Column</label>
+                        <select id="column" name="column"></select>
+                    </div>
+                </div>
             </div>
+            
+            <!-- Text Input Fallback -->
             <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Or Enter Filenames</label>
-                <textarea name="text" placeholder="One filename per line"></textarea>
+                <label for="text"><i class="fas fa-font icon"></i> Or Enter Filenames (one per line)</label>
+                <textarea id="text" name="text" placeholder="my file.txt&#10;document 1.pdf&#10;image:1.jpg"></textarea>
             </div>
-            <button type="submit"><i class="fas fa-magic"></i> Clean & Download</button>
+            
+            <button type="submit"><i class="fas fa-magic icon"></i> Clean & Download</button>
         </form>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script>
-        document.querySelector('input[name="file"]').addEventListener('change', function(e) {
-            const selector = document.getElementById('column-selector');
-            selector.style.display = e.target.files.length ? 'block' : 'none';
-            
-            if (e.target.files.length) {
-                const file = e.target.files[0];
+        // Show sheet/column selectors when file is selected
+        document.getElementById('file').addEventListener('change', function(e) {
+            const selectors = document.getElementById('excel-selectors');
+            if (this.files.length) {
+                selectors.classList.remove('hidden');
+                
+                const file = this.files[0];
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
                     
-                    const select = document.querySelector('select[name="column"]');
-                    select.innerHTML = '';
+                    // Populate sheet selector
+                    const sheetSelect = document.getElementById('sheet');
+                    sheetSelect.innerHTML = '';
+                    workbook.SheetNames.forEach(sheet => {
+                        const option = document.createElement('option');
+                        option.value = sheet;
+                        option.textContent = sheet;
+                        sheetSelect.appendChild(option);
+                    });
                     
-                    if (json.length > 0) {
-                        json[0].forEach((col, i) => {
-                            const option = document.createElement('option');
-                            option.value = i;
-                            option.textContent = col || `Column ${i+1}`;
-                            select.appendChild(option);
-                        });
-                    }
+                    // Populate column selector for first sheet
+                    updateColumnSelector(workbook.Sheets[workbook.SheetNames[0]]);
+                };
+                
+                reader.readAsArrayBuffer(file);
+            } else {
+                selectors.classList.add('hidden');
+            }
+        });
+        
+        // Update columns when sheet changes
+        document.getElementById('sheet').addEventListener('change', function() {
+            const fileInput = document.getElementById('file');
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const sheet = workbook.Sheets[document.getElementById('sheet').value];
+                    updateColumnSelector(sheet);
                 };
                 
                 reader.readAsArrayBuffer(file);
             }
         });
+        
+        function updateColumnSelector(sheet) {
+            const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+            const columnSelect = document.getElementById('column');
+            columnSelect.innerHTML = '';
+            
+            if (json.length > 0) {
+                json[0].forEach((col, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = col || `Column ${index + 1}`;
+                    columnSelect.appendChild(option);
+                });
+            }
+        }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>"""
 
 def clean_filename(filename):
+    """Clean filename for Windows compatibility"""
     invalid_chars = r'<>:"/\|?* \x00-\x1F'
     return ''.join('_' if char in invalid_chars else char for char in str(filename)).strip('_')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        # Process text input
         if 'text' in request.form and request.form['text'].strip():
             filenames = [line.strip() for line in request.form['text'].split('\n') if line.strip()]
             cleaned = [[name, clean_filename(name)] for name in filenames]
             df = pd.DataFrame(cleaned, columns=['Original', 'Cleaned'])
+        
+        # Process Excel file
         elif 'file' in request.files:
             file = request.files['file']
             if file.filename:
-                df = pd.read_excel(file)
-                if 'column' in request.form:
-                    col_idx = int(request.form['column'])
-                    col_name = df.columns[col_idx]
-                    df['Cleaned'] = df.iloc[:, col_idx].apply(clean_filename)
+                # Read the Excel file
+                wb = openpyxl.load_workbook(file)
+                
+                # Get selected sheet and column
+                sheet_name = request.form.get('sheet')
+                col_index = int(request.form.get('column', 0))
+                
+                # Get data from selected sheet
+                sheet = wb[sheet_name] if sheet_name else wb.active
+                data = sheet.values
+                cols = next(data)
+                filenames = [row[col_index] for row in data]
+                
+                # Clean filenames
+                cleaned = [[name, clean_filename(name)] for name in filenames if name]
+                df = pd.DataFrame(cleaned, columns=['Original', 'Cleaned'])
         
+        # Create output Excel
         output = BytesIO()
-        df.to_excel(output, index=False, engine='openpyxl')
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
         output.seek(0)
+        
         return send_file(
             output,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
