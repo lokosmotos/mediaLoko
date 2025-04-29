@@ -3,10 +3,11 @@ from flask import Flask, request, send_file, render_template_string
 import pandas as pd
 from io import BytesIO
 import openpyxl
+from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
 
-# HTML Template with sheet and column selection
+# HTML Template with row 7 start and A-Z column selection
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,17 +104,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <input type="file" id="file" name="file" accept=".xlsx,.xls">
             </div>
             
-            <!-- Sheet and Column Selectors (hidden initially) -->
-            <div id="excel-selectors" class="hidden">
-                <div class="selectors">
-                    <div class="form-group">
-                        <label for="sheet"><i class="fas fa-table icon"></i> Select Sheet</label>
-                        <select id="sheet" name="sheet"></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="column"><i class="fas fa-columns icon"></i> Select Column</label>
-                        <select id="column" name="column"></select>
-                    </div>
+            <!-- Column Selector (hidden initially) -->
+            <div id="column-selector" class="hidden">
+                <div class="form-group">
+                    <label for="column"><i class="fas fa-columns icon"></i> Select Column (A-Z)</label>
+                    <select id="column" name="column">
+                        <option value="">-- Select Column --</option>
+                        <!-- Columns A-Z will be added by JavaScript -->
+                    </select>
                 </div>
             </div>
             
@@ -128,73 +126,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     <script>
-        // Show sheet/column selectors when file is selected
+        // Show column selector when file is selected
         document.getElementById('file').addEventListener('change', function(e) {
-            const selectors = document.getElementById('excel-selectors');
+            const selector = document.getElementById('column-selector');
             if (this.files.length) {
-                selectors.classList.remove('hidden');
+                selector.classList.remove('hidden');
                 
-                const file = this.files[0];
-                const reader = new FileReader();
+                // Populate column selector with A-Z
+                const columnSelect = document.getElementById('column');
+                columnSelect.innerHTML = '<option value="">-- Select Column --</option>';
                 
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Populate sheet selector
-                    const sheetSelect = document.getElementById('sheet');
-                    sheetSelect.innerHTML = '';
-                    workbook.SheetNames.forEach(sheet => {
-                        const option = document.createElement('option');
-                        option.value = sheet;
-                        option.textContent = sheet;
-                        sheetSelect.appendChild(option);
-                    });
-                    
-                    // Populate column selector for first sheet
-                    updateColumnSelector(workbook.Sheets[workbook.SheetNames[0]]);
-                };
-                
-                reader.readAsArrayBuffer(file);
-            } else {
-                selectors.classList.add('hidden');
-            }
-        });
-        
-        // Update columns when sheet changes
-        document.getElementById('sheet').addEventListener('change', function() {
-            const fileInput = document.getElementById('file');
-            if (fileInput.files.length) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const sheet = workbook.Sheets[document.getElementById('sheet').value];
-                    updateColumnSelector(sheet);
-                };
-                
-                reader.readAsArrayBuffer(file);
-            }
-        });
-        
-        function updateColumnSelector(sheet) {
-            const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-            const columnSelect = document.getElementById('column');
-            columnSelect.innerHTML = '';
-            
-            if (json.length > 0) {
-                json[0].forEach((col, index) => {
+                for (let i = 0; i < 26; i++) {
+                    const letter = String.fromCharCode(65 + i); // A-Z
                     const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = col || `Column ${index + 1}`;
+                    option.value = letter;
+                    option.textContent = `Column ${letter}`;
                     columnSelect.appendChild(option);
-                });
+                }
+            } else {
+                selector.classList.add('hidden');
             }
-        }
+        });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>"""
 
@@ -216,18 +169,19 @@ def index():
         elif 'file' in request.files:
             file = request.files['file']
             if file.filename:
-                # Read the Excel file
-                wb = openpyxl.load_workbook(file)
+                # Read the Excel file starting from row 7
+                wb = openpyxl.load_workbook(file, read_only=True)
+                sheet = wb.active
                 
-                # Get selected sheet and column
-                sheet_name = request.form.get('sheet')
-                col_index = int(request.form.get('column', 0))
+                # Get selected column letter (A-Z)
+                col_letter = request.form.get('column', 'A')
+                col_index = openpyxl.utils.column_index_from_string(col_letter) - 1
                 
-                # Get data from selected sheet
-                sheet = wb[sheet_name] if sheet_name else wb.active
-                data = sheet.values
-                cols = next(data)
-                filenames = [row[col_index] for row in data]
+                # Read data from column starting at row 7
+                filenames = []
+                for row in sheet.iter_rows(min_row=7, values_only=True):
+                    if len(row) > col_index and row[col_index]:
+                        filenames.append(row[col_index])
                 
                 # Clean filenames
                 cleaned = [[name, clean_filename(name)] for name in filenames if name]
