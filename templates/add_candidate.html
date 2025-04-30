@@ -2,119 +2,160 @@
 {% block title %}Add New Candidate{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1><i class="fas fa-user-plus cat-icon"></i> Add New Candidate</h1>
+<div class="form-container">
+    <div class="form-header">
+        <h1><i class="fas fa-user-plus cat-icon"></i> Add New Candidate</h1>
+        <p class="form-subtitle">Fill in the details below to add a new candidate to your feline team</p>
+    </div>
     
     <form method="POST" class="candidate-form">
         <div class="form-columns">
             <!-- Left Column -->
             <div class="form-column">
-                <div class="form-group">
-                    <label for="name">Full Name*</label>
-                    <input type="text" id="name" name="name" required>
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-id-card"></i> Basic Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name*</label>
+                        <input type="text" id="name" name="name" required placeholder="Whiskers McPaws">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact">Contact Information*</label>
+                        <input type="text" id="contact" name="contact" required placeholder="meow@example.com / 012-345 6789">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="position">Position Applied*</label>
+                        <input type="text" id="position" name="position" required placeholder="Chief Mouser">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="branch">Branch/Location*</label>
+                        <input type="text" id="branch" name="branch" required placeholder="Cat Tower HQ">
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="contact">Contact Information*</label>
-                    <input type="text" id="contact" name="contact" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="position">Position Applied*</label>
-                    <input type="text" id="position" name="position" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="branch">Branch/Location*</label>
-                    <input type="text" id="branch" name="branch" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="interview_date">Interview Date*</label>
-                    <input type="date" id="interview_date" name="interview_date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="interview_status">Interview Status</label>
-                    <select id="interview_status" name="interview_status">
-                        <option value="Pending" selected>Pending</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="outcome">Interview Outcome</label>
-                    <select id="outcome" name="outcome">
-                        <option value="" selected disabled>Select outcome</option>
-                        <option value="Successful">Successful</option>
-                        <option value="Not Successful">Not Successful</option>
-                    </select>
+
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-calendar-alt"></i> Interview Details</h3>
+                    
+                    <div class="form-group">
+                        <label for="interview_date">Interview Date*</label>
+                        <input type="date" id="interview_date" name="interview_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interview_status">Interview Status</label>
+                        <div class="select-wrapper">
+                            <select id="interview_status" name="interview_status">
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="outcome">Interview Outcome</label>
+                        <div class="select-wrapper">
+                            <select id="outcome" name="outcome">
+                                <option value="" selected disabled>Select outcome</option>
+                                <option value="Successful">Successful</option>
+                                <option value="Not Successful">Not Successful</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- Right Column -->
             <div class="form-column">
-                <div class="form-group">
-                    <label for="willing">Willing to Join?</label>
-                    <select id="willing" name="willing">
-                        <option value="" selected disabled>Select option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-paw"></i> Employment Details</h3>
+                    
+                    <div class="form-group">
+                        <label for="willing">Willing to Join?</label>
+                        <div class="select-wrapper">
+                            <select id="willing" name="willing">
+                                <option value="" selected disabled>Select option</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-date-group">
+                        <div class="form-group">
+                            <label for="start_date">Proposed Start Date</label>
+                            <input type="date" id="start_date" name="start_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="available_from">Available From</label>
+                            <input type="date" id="available_from" name="available_from">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Candidate Status</label>
+                        <div class="status-toggle">
+                            <input type="radio" id="status-active" name="status" value="Active" checked>
+                            <label for="status-active" class="toggle-option active">Active</label>
+                            
+                            <input type="radio" id="status-inactive" name="status" value="Inactive">
+                            <label for="status-inactive" class="toggle-option">Inactive</label>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="start_date">Proposed Start Date</label>
-                    <input type="date" id="start_date" name="start_date">
-                </div>
-                
-                <div class="form-group">
-                    <label for="no_show">No Show on First Day?</label>
-                    <select id="no_show" name="no_show">
-                        <option value="No" selected>No</option>
-                        <option value="Yes">Yes</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="no_show_reason">No Show Reason</label>
-                    <textarea id="no_show_reason" name="no_show_reason" rows="2"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="message_status">Message Status</label>
-                    <select id="message_status" name="message_status">
-                        <option value="Not Sent" selected>Not Sent</option>
-                        <option value="Sent">Sent</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="status">Candidate Status</label>
-                    <select id="status" name="status">
-                        <option value="Active" selected>Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="available_from">Available From Date</label>
-                    <input type="date" id="available_from" name="available_from">
+
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-comment-alt"></i> Communication</h3>
+                    
+                    <div class="form-group">
+                        <label for="no_show">No Show on First Day?</label>
+                        <div class="select-wrapper">
+                            <select id="no_show" name="no_show">
+                                <option value="No" selected>No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="no_show_reason">No Show Reason</label>
+                        <textarea id="no_show_reason" name="no_show_reason" rows="2" placeholder="If candidate didn't show up..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message_status">Message Status</label>
+                        <div class="select-wrapper">
+                            <select id="message_status" name="message_status">
+                                <option value="Not Sent" selected>Not Sent</option>
+                                <option value="Sent">Sent</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
         <!-- Full width notes field -->
-        <div class="form-group">
-            <label for="notes">Additional Notes</label>
-            <textarea id="notes" name="notes" rows="4"></textarea>
+        <div class="form-section">
+            <h3 class="section-title"><i class="fas fa-edit"></i> Additional Notes</h3>
+            <div class="form-group">
+                <textarea id="notes" name="notes" rows="4" placeholder="Any special skills, observations, or comments about this candidate..."></textarea>
+            </div>
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary btn-lg">
                 <i class="fas fa-save"></i> Save Candidate
             </button>
-            <a href="{{ url_for('index') }}" class="btn">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Cancel
             </a>
         </div>
