@@ -1,18 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Filename Cleaner</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
+    <title>Filename Cleaner Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}" id="dark-mode-css" disabled>
 </head>
 <body>
     <div class="app-container">
         <header class="app-header">
-            <h1><i class="fas fa-file-clean"></i> FilenameCleaner Pro</h1>
-            <p class="tagline">Make your filenames Windows-perfect</p>
+            <div class="logo">
+                <i class="fas fa-file-clean"></i>
+                <h1>FilenameCleaner Pro</h1>
+            </div>
+            <p class="tagline">Make your filenames Windows-perfect with ease</p>
+            <button id="theme-toggle" class="theme-toggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
         </header>
 
         <main class="app-main">
@@ -26,264 +34,170 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="card">
+            <div class="tool-container">
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="upload">
-                        <i class="fas fa-file-upload"></i> Upload File
+                    <button class="tab-btn active" data-tab="single">
+                        <i class="fas fa-file"></i> Single File
+                    </button>
+                    <button class="tab-btn" data-tab="batch">
+                        <i class="fas fa-folder-open"></i> Batch Process
                     </button>
                     <button class="tab-btn" data-tab="paste">
                         <i class="fas fa-paste"></i> Paste Text
                     </button>
                 </div>
 
-                <form method="post" enctype="multipart/form-data" class="cleaner-form">
-                    <div class="tab-content active" id="upload-tab">
-                        <div class="form-group">
-                            <label for="file">
-                                <i class="fas fa-file-excel"></i> Select Excel/CSV File
-                            </label>
-                            <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls">
-                        </div>
+                <div class="tab-content active" id="single-tab">
+                    <div id="drop-zone" class="drop-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop a file here or click to browse</p>
+                        <input type="file" id="file-input" accept=".csv,.xlsx,.xls">
+                    </div>
+                </div>
 
-                        <div class="excel-options hidden">
-                            <div class="form-group">
-                                <label for="sheet"><i class="fas fa-table"></i> Worksheet</label>
-                                <select id="sheet" name="sheet"></select>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="column"><i class="fas fa-columns"></i> Column</label>
-                                    <select id="column" name="column"></select>
+                <div class="tab-content" id="batch-tab">
+                    <div id="batch-drop-zone" class="drop-zone">
+                        <i class="fas fa-folder-open"></i>
+                        <p>Drag & drop multiple files or click to browse</p>
+                        <input type="file" id="batch-file-input" multiple accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div class="file-list" id="file-list"></div>
+                </div>
+
+                <div class="tab-content" id="paste-tab">
+                    <div class="form-group">
+                        <label for="text-input">
+                            <i class="fas fa-align-left"></i> Paste filenames (one per line)
+                        </label>
+                        <textarea id="text-input" placeholder="Example filenames:&#10;My Document 1.txt&#10;Photo:Vacation.jpg&#10;Project|File*.pdf"></textarea>
+                    </div>
+                </div>
+
+                <div class="preview-card">
+                    <h3><i class="fas fa-eye"></i> Live Preview</h3>
+                    <div id="live-preview">
+                        <p>Start typing or upload files to see results</p>
+                    </div>
+                </div>
+
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <button class="accordion-btn">
+                            <i class="fas fa-sliders-h"></i> Cleaning Options
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="options-grid">
+                                <div class="option-group">
+                                    <h4>Space Handling</h4>
+                                    <select id="space-option" name="space_replacement">
+                                        <option value="remove">Remove spaces</option>
+                                        <option value="underscore">Replace with _</option>
+                                        <option value="hyphen">Replace with -</option>
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="start_row"><i class="fas fa-arrow-down"></i> Start Row</label>
-                                    <input type="number" id="start_row" name="start_row" min="1" value="7">
+
+                                <div class="option-group">
+                                    <h4>Text Case</h4>
+                                    <select id="case-option" name="text_case">
+                                        <option value="original">Keep original</option>
+                                        <option value="lower">lowercase</option>
+                                        <option value="upper">UPPERCASE</option>
+                                        <option value="title">Title Case</option>
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="end_row"><i class="fas fa-arrow-up"></i> End Row</label>
-                                    <input type="number" id="end_row" name="end_row" min="1">
+
+                                <div class="option-group">
+                                    <h4>Special Characters</h4>
+                                    <div class="char-options">
+                                        <label>
+                                            <input type="checkbox" name="keep_slash" checked>
+                                            <i class="fas fa-slash"></i> Forward Slash (/)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_backslash" checked>
+                                            <i class="fas fa-backslash"></i> Backslash (\)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_colon" checked>
+                                            <i class="fas fa-colon"></i> Colon (:)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_asterisk" checked>
+                                            <i class="fas fa-asterisk"></i> Asterisk (*)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_question" checked>
+                                            <i class="fas fa-question"></i> Question Mark (?)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_dquote" checked>
+                                            <i class="fas fa-quote-right"></i> Double Quote (")
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_ltgt" checked>
+                                            <i class="fas fa-code"></i> Angle Brackets (<>)
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="keep_pipe" checked>
+                                            <i class="fas fa-grip-lines-vertical"></i> Pipe (|)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="option-group">
+                                    <h4>Advanced</h4>
+                                    <label>
+                                        <input type="checkbox" id="remove-repeats" name="remove_repeats">
+                                        Remove duplicate symbols (e.g., "file--name" → "file-name")
+                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="tab-content" id="paste-tab">
-                        <div class="form-group">
-                            <label for="text">
-                                <i class="fas fa-align-left"></i> Paste Filenames (one per line)
-                            </label>
-                            <textarea id="text" name="text" placeholder="Example:&#10;My/File:Name*.txt&#10;Another|File?.jpg"></textarea>
-                        </div>
+                <div class="preset-section">
+                    <h3><i class="fas fa-save"></i> Presets</h3>
+                    <div class="preset-buttons">
+                        <button type="button" class="preset-btn" data-preset="windows">
+                            <i class="fab fa-windows"></i> Windows Safe
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="unix">
+                            <i class="fab fa-linux"></i> Unix Friendly
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="strict">
+                            <i class="fas fa-lock"></i> Strict Mode
+                        </button>
+                        <button type="button" class="preset-btn" data-preset="keepall">
+                            <i class="fas fa-unlock"></i> Keep All
+                        </button>
                     </div>
+                </div>
 
-                    <div class="char-options">
-    <h3><i class="fas fa-sliders-h"></i> Character Handling</h3>
-    
-    <div class="dropdown-options">
-        <div class="dropdown">
-            <button class="dropdown-btn">
-                <i class="fas fa-file-signature"></i> Special Characters
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="dropdown-content">
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_slash" checked>
-                    <i class="fas fa-slash"></i> Forward Slash (/)
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_backslash" checked>
-                    <i class="fas fa-backslash"></i> Backslash (\)
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_colon" checked>
-                    <i class="fas fa-colon"></i> Colon (:)
-                </label>
+                <div class="action-buttons">
+                    <button id="process-btn" class="btn-primary" disabled>
+                        <i class="fas fa-magic"></i> Process Files
+                    </button>
+                    <div class="export-options">
+                        <select id="export-format">
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV (.csv)</option>
+                            <option value="json">JSON (.json)</option>
+                        </select>
+                        <button id="export-btn" class="btn-secondary" disabled>
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="dropdown">
-            <button class="dropdown-btn">
-                <i class="fas fa-file-code"></i> Technical Characters
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="dropdown-content">
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_asterisk" checked>
-                    <i class="fas fa-asterisk"></i> Asterisk (*)
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_question" checked>
-                    <i class="fas fa-question"></i> Question Mark (?)
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_pipe" checked>
-                    <i class="fas fa-grip-lines-vertical"></i> Pipe (|)
-                </label>
-            </div>
-        </div>
-        
-        <div class="dropdown">
-            <button class="dropdown-btn">
-                <i class="fas fa-quote-right"></i> Quotes & Brackets
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="dropdown-content">
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_dquote" checked>
-                    <i class="fas fa-quote-right"></i> Double Quote (")
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" name="keep_ltgt" checked>
-                    <i class="fas fa-code"></i> Angle Brackets (<>)
-                </label>
-            </div>
-        </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2023 FilenameCleaner Pro | Powered by Flask</p>
+        </footer>
     </div>
-    
-    <div class="quick-presets">
-        <button type="button" class="preset-btn" data-preset="windows">
-            <i class="fab fa-windows"></i> Windows Default
-        </button>
-        <button type="button" class="preset-btn" data-preset="strict">
-            <i class="fas fa-lock"></i> Strict Mode
-        </button>
-        <button type="button" class="preset-btn" data-preset="keepall">
-            <i class="fas fa-unlock"></i> Keep All
-        </button>
-    </div>
-</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script>
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tabId = this.dataset.tab;
-                
-                // Update active tab button
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show selected tab content
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-
-        // File upload handling
-        document.getElementById('file').addEventListener('change', function() {
-            const optionsDiv = document.querySelector('.excel-options');
-            
-            if (this.files.length) {
-                optionsDiv.classList.remove('hidden');
-                const file = this.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-
-                        // Populate sheet selector
-                        const sheetSelect = document.getElementById('sheet');
-                        sheetSelect.innerHTML = '';
-                        workbook.SheetNames.forEach(sheet => {
-                            const option = document.createElement('option');
-                            option.value = sheet;
-                            option.textContent = sheet;
-                            sheetSelect.appendChild(option);
-                        });
-
-                        // Populate column selector (A-Z)
-                        const columnSelect = document.getElementById('column');
-                        columnSelect.innerHTML = '';
-                        for (let i = 0; i < 26; i++) {
-                            const option = document.createElement('option');
-                            option.value = String.fromCharCode(65 + i);
-                            option.textContent = `Column ${String.fromCharCode(65 + i)}`;
-                            columnSelect.appendChild(option);
-                        }
-
-                        // Set default end row
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const range = XLSX.utils.decode_range(firstSheet['!ref']);
-                        document.getElementById('end_row').value = range.e.r + 1;
-                    } catch (error) {
-                        alert('Error reading file: ' + error.message);
-                    }
-                };
-                
-                reader.readAsArrayBuffer(file);
-            } else {
-                optionsDiv.classList.add('hidden');
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
-<script>
-    // Dropdown functionality
-    document.querySelectorAll('.dropdown-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.parentElement.classList.toggle('active');
-        });
-    });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('.dropdown-btn')) {
-            document.querySelectorAll('.dropdown').forEach(dropdown => {
-                dropdown.classList.remove('active');
-            });
-        }
-    });
-
-    // Preset buttons
-    const presets = {
-        windows: {
-            keep_slash: false,
-            keep_backslash: false,
-            keep_colon: false,
-            keep_asterisk: false,
-            keep_question: false,
-            keep_dquote: false,
-            keep_ltgt: false,
-            keep_pipe: false
-        },
-        strict: {
-            keep_slash: false,
-            keep_backslash: false,
-            keep_colon: false,
-            keep_asterisk: false,
-            keep_question: false,
-            keep_dquote: false,
-            keep_ltgt: false,
-            keep_pipe: false
-        },
-        keepall: {
-            keep_slash: true,
-            keep_backslash: true,
-            keep_colon: true,
-            keep_asterisk: true,
-            keep_question: true,
-            keep_dquote: true,
-            keep_ltgt: true,
-            keep_pipe: true
-        }
-    };
-
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const preset = presets[this.dataset.preset];
-            for (const [key, value] of Object.entries(preset)) {
-                const checkbox = document.querySelector(`input[name="${key}"]`);
-                if (checkbox) {
-                    checkbox.checked = value;
-                }
-            }
-        });
-    });
-</script>
