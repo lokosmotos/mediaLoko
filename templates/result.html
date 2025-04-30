@@ -1,18 +1,116 @@
-<div class="results">
-    <h2><i class="fas fa-check-circle"></i> Alignment Results</h2>
-    <div class="summary">
-        <span>Confidence: <span id="avgConfidence">0%</span></span>
-        <span>Aligned: <span id="alignedCount">0</span>/<span id="totalCount">0</span></span>
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Filename Cleaner Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}" id="dark-mode-css" disabled>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-file-clean"></i>
+                <h1>Processing Results</h1>
+            </div>
+            <button id="theme-toggle" class="theme-toggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
+        </header>
+
+        <main class="app-main">
+            <div class="results-container">
+                <div class="results-header">
+                    <h2><i class="fas fa-check-circle"></i> Processed {{ results|length }} filenames</h2>
+                    <div class="export-options">
+                        <select id="export-format">
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV (.csv)</option>
+                            <option value="json">JSON (.json)</option>
+                        </select>
+                        <button id="export-btn" class="btn-primary">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                    </div>
+                </div>
+
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Original Filename</th>
+                                <th>Cleaned Filename</th>
+                                <th>Changes Made</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>{{ result.original }}</td>
+                                <td>{{ result.cleaned }}</td>
+                                <td>
+                                    {% if result.removed %}
+                                        Removed: {{ result.removed|join(', ') }}
+                                    {% else %}
+                                        No changes
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Process More Files
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2023 FilenameCleaner Pro | Powered by Flask</p>
+        </footer>
     </div>
-    
-    <div class="subtitle-list">
-        {% for sub in results %}
-        <div class="subtitle {% if sub.confidence < 70 %}low-confidence{% endif %}">
-            <div class="time">{{ sub.start }} → {{ sub.end }}</div>
-            <div class="confidence">Confidence: {{ sub.confidence }}%</div>
-            <div class="text en">{{ sub.en_text }}</div>
-            <div class="text zh">{{ sub.zh_text }}</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.getElementById('export-btn').addEventListener('click', function() {
+            const format = document.getElementById('export-format').value;
+            const results = {{ results|tojson|safe }};
+            
+            fetch('/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    format: format,
+                    results: results
+                })
+            })
+            .then(response => {
+                if (response.ok) return response.blob();
+                throw new Error('Export failed');
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cleaned_filenames.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                alert(`Error: ${error.message}`);
+            });
+        });
+    </script>
+</body>
+</html>
