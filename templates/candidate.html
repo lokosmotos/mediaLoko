@@ -1,1 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidate Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Candidate Profile: {{ candidate.name }}</h1>
+    <ul>
+        <li><strong>Contact:</strong> {{ candidate.contact }}</li>
+        <li><strong>Position:</strong> {{ candidate.position }}</li>
+        <li><strong>Branch Preference:</strong> {{ candidate.branch }}</li>
+        <li><strong>Interview Date:</strong> {{ candidate.interview_date }} ({{ candidate.interview_status }})</li>
+        <li><strong>Outcome:</strong> {{ candidate.outcome }}</li>
+        <li><strong>Willing to Join:</strong> {{ candidate.willing }}</li>
+        <li><strong>Start Date:</strong> {{ candidate.start_date }}</li>
+        <li><strong>Not Coming on First Day:</strong> {{ candidate.no_show }}</li>
+        <li><strong>Reason:</strong> {{ candidate.no_show_reason }}</li>
+        <li><strong>Message Status:</strong> {{ candidate.message_status }}</li>
+        <li><strong>Available From:</strong> {{ candidate.available_from }}</li>
+        <li><strong>Status:</strong> {{ candidate.status }}</li>
+        <li><strong>Notes:</strong> {{ candidate.notes }}</li>
+    </ul>
+    <a href="/" class="button">← Back to Dashboard</a>
+</body>
+</html>
 
