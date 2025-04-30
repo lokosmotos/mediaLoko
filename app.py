@@ -1,34 +1,53 @@
 import os
 import re
-from flask import Flask, request, send_file, render_template, flash, redirect
-import pandas as pd
 from io import BytesIO
+from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
+import pandas as pd
 import openpyxl
 from openpyxl.utils import get_column_letter
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.secret_key = 'your_secret_key_here'
+app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 
-def clean_filename(name, char_options=None, show_removed=False):
+# Configure upload folder
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def clean_filename(name, options=None):
     """Clean filename with customizable character handling"""
     if not name or pd.isna(name):
-        return ('', []) if show_removed else ''
+        return {'cleaned': '', 'removed': []}
     
-    char_options = char_options or {
-        'keep_slash': True,
-        'keep_backslash': True,
-        'keep_colon': True,
-        'keep_asterisk': True,
-        'keep_question': True,
-        'keep_dquote': True,
-        'keep_ltgt': True,
-        'keep_pipe': True
-    }
-    
+    options = options or {}
     original = str(name).strip()
     removed_chars = []
-    chars_to_remove = []
     
+    # Space handling
+    space_option = options.get('space_replacement', 'remove')
+    if space_option == 'underscore':
+        original = original.replace(' ', '_')
+    elif space_option == 'hyphen':
+        original = original.replace(' ', '-')
+    
+    # Case handling
+    case_option = options.get('text_case', 'original')
+    if case_option == 'lower':
+        original = original.lower()
+    elif case_option == 'upper':
+        original = original.upper()
+    elif case_option == 'title':
+        original = original.title()
+    
+    # Character removal
+    chars_to_remove = []
     special_chars = [
         ('/', 'keep_slash'),
         ('\\\\', 'keep_backslash'),
@@ -42,10 +61,16 @@ def clean_filename(name, char_options=None, show_removed=False):
     ]
     
     for char, option in special_chars:
-        if not char_options.get(option, True):
+        if not options.get(option, True):
             chars_to_remove.append(char)
     
-    chars_to_remove.extend(['\\x00-\\x1F', ' '])
+    # Always remove control characters
+    chars_to_remove.extend(['\\x00-\\x1F'])
+    
+    # Remove duplicate symbols if enabled
+    if options.get('remove_repeats'):
+        original = re.sub(r'([-_\.])\1+', r'\1', original)
+    
     pattern = f'[{"".join(chars_to_remove)}]' if chars_to_remove else None
     
     cleaned = original
@@ -53,37 +78,47 @@ def clean_filename(name, char_options=None, show_removed=False):
         removed_chars = list(set(re.findall(pattern, cleaned)))
         cleaned = re.sub(pattern, '', cleaned).strip()
     
-    return (cleaned, removed_chars) if show_removed else cleaned
+    return {
+        'original': str(name).strip(),
+        'cleaned': cleaned,
+        'removed': removed_chars
+    }
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        try:
-            char_options = {
-                'keep_slash': request.form.get('keep_slash') == 'on',
-                'keep_backslash': request.form.get('keep_backslash') == 'on',
-                'keep_colon': request.form.get('keep_colon') == 'on',
-                'keep_asterisk': request.form.get('keep_asterisk') == 'on',
-                'keep_question': request.form.get('keep_question') == 'on',
-                'keep_dquote': request.form.get('keep_dquote') == 'on',
-                'keep_ltgt': request.form.get('keep_ltgt') == 'on',
-                'keep_pipe': request.form.get('keep_pipe') == 'on'
-            }
+@app.route('/', methods=['GET'])
+def home():
+    return render_template('index.html')
+
+@app.route('/preview', methods=['POST'])
+def preview():
+    data = request.json
+    result = clean_filename(data.get('text', ''), data.get('options', {}))
+    return jsonify(result)
+
+@app.route('/process', methods=['POST'])
+def process_files():
+    if 'files[]' not in request.files:
+        flash('No files uploaded')
+        return redirect(url_for('home'))
+    
+    files = request.files.getlist('files[]')
+    options = request.form.to_dict()
+    results = []
+    
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
             
-            filenames = []
-            removed_info = []
-            
-            if 'file' in request.files and request.files['file'].filename:
-                file = request.files['file']
-                
-                if file.filename.endswith(('.xlsx', '.xls')):
-                    wb = openpyxl.load_workbook(file, read_only=True)
-                    sheet_name = request.form.get('sheet')
+            try:
+                if filename.endswith(('.xlsx', '.xls')):
+                    wb = openpyxl.load_workbook(filepath, read_only=True)
+                    sheet_name = options.get('sheet')
                     sheet = wb[sheet_name] if sheet_name else wb.active
-                    col_letter = request.form.get('column', 'A')
-                    col_idx = column_index_from_string(col_letter)
-                    start_row = int(request.form.get('start_row', 7))
-                    end_row = int(request.form.get('end_row', sheet.max_row))
+                    col_letter = options.get('column', 'A')
+                    col_idx = get_column_letter(column_index_from_string(col_letter))
+                    start_row = int(options.get('start_row', 1))
+                    end_row = int(options.get('end_row', sheet.max_row))
                     
                     for row in sheet.iter_rows(
                         min_row=start_row,
@@ -93,61 +128,60 @@ def index():
                         values_only=True
                     ):
                         if row[0] and str(row[0]).strip():
-                            original = str(row[0]).strip()
-                            cleaned, removed = clean_filename(original, char_options, True)
-                            filenames.append(original)
-                            removed_info.append(", ".join(removed) if removed else "")
+                            result = clean_filename(row[0], options)
+                            results.append(result)
                 
-                elif file.filename.endswith('.csv'):
-                    df = pd.read_csv(file)
+                elif filename.endswith('.csv'):
+                    df = pd.read_csv(filepath)
                     if not df.empty:
-                        for original in df.iloc[:, 0].astype(str):
-                            if original.strip():
-                                cleaned, removed = clean_filename(original, char_options, True)
-                                filenames.append(original.strip())
-                                removed_info.append(", ".join(removed) if removed else "")
-                else:
-                    flash("Unsupported file format. Please upload Excel or CSV.")
-                    return redirect('/')
+                        for value in df.iloc[:, 0].astype(str):
+                            if value.strip():
+                                result = clean_filename(value, options)
+                                results.append(result)
             
-            elif 'text' in request.form and request.form['text'].strip():
-                for line in request.form['text'].split('\n'):
-                    if line.strip():
-                        cleaned, removed = clean_filename(line.strip(), char_options, True)
-                        filenames.append(line.strip())
-                        removed_info.append(", ".join(removed) if removed else "")
-            
-            if not filenames:
-                flash("No valid filenames found to process.")
-                return redirect('/')
-            
-            output_df = pd.DataFrame({
-                'Original Filename': filenames,
-                'Cleaned Filename': [clean_filename(f, char_options) for f in filenames],
-                'Removed Characters': removed_info
-            })
-            
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                output_df.to_excel(writer, index=False, sheet_name='Cleaned_Filenames')
-                pd.DataFrame({
-                    'Total Filenames Processed': [len(filenames)],
-                    'Character Settings': [str(char_options)]
-                }).to_excel(writer, index=False, sheet_name='Summary')
-            
-            return send_file(
-                output,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                as_attachment=True,
-                download_name='cleaned_filenames.xlsx'
-            )
-        
-        except Exception as e:
-            flash(f"Error: {str(e)}")
-            return redirect('/')
+            except Exception as e:
+                flash(f"Error processing {filename}: {str(e)}")
+            finally:
+                os.remove(filepath)
     
-    return render_template('index.html')
+    if not results:
+        flash("No valid filenames found to process")
+        return redirect(url_for('home'))
+    
+    return render_template('results.html', results=results)
+
+@app.route('/export', methods=['POST'])
+def export():
+    data = request.json
+    format = data.get('format', 'excel')
+    results = data.get('results', [])
+    
+    if not results:
+        return jsonify({'error': 'No data to export'}), 400
+    
+    df = pd.DataFrame(results)
+    
+    if format == 'csv':
+        output = df.to_csv(index=False)
+        mimetype = 'text/csv'
+        ext = 'csv'
+    elif format == 'json':
+        output = df.to_json(orient='records')
+        mimetype = 'application/json'
+        ext = 'json'
+    else:
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ext = 'xlsx'
+    
+    return send_file(
+        output if format == 'excel' else BytesIO(output.encode()),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=f'cleaned_filenames.{ext}'
+    )
 
 if __name__ == '__main__':
-    os.makedirs('uploads', exist_ok=True)
     app.run(host='0.0.0.0', port=5000, debug=True)
