@@ -1,111 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Add Candidate</title>
-  <style>
-    label { display: block; margin-top: 10px; }
-    select, input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Candidate</title>
 </head>
 <body>
-  <h1>Add Candidate</h1>
-  <form method="POST">
+    <h1>Add New Candidate</h1>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
 
-    <label>Name:</label>
-    <input type="text" name="name" required>
+        <label for="contact">Contact:</label>
+        <input type="text" id="contact" name="contact" required><br>
 
-    <label>Contact:</label>
-    <input type="text" name="contact" required>
+        <label for="position">Position:</label>
+        <input type="text" id="position" name="position" required><br>
 
-    <label>Position:</label>
-    <input type="text" name="position" required>
+        <label for="branch">Branch:</label>
+        <input type="text" id="branch" name="branch" required><br>
 
-    <label>Branch Preference:</label>
-    <input type="text" name="branch">
+        <label for="interview_date">Interview Date:</label>
+        <input type="date" id="interview_date" name="interview_date" required><br>
 
-    <label>Interview Date:</label>
-    <input type="date" name="interview_date">
+        <label for="interview_status">Interview Status:</label>
+        <select id="interview_status" name="interview_status">
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+        </select><br>
 
-    <label>Interview Status:</label>
-    <select name="interview_status" onchange="toggleOther(this, 'interview_status_other')">
-      <option value="">-- Select --</option>
-      <option value="Scheduled">Scheduled</option>
-      <option value="Completed">Completed</option>
-      <option value="Not Scheduled">Not Scheduled</option>
-      <option value="Other">Other</option>
-    </select>
-    <input type="text" name="interview_status" id="interview_status_other" style="display:none;" placeholder="Specify other...">
+        <label for="outcome">Outcome:</label>
+        <select id="outcome" name="outcome">
+            <option value="Successful">Successful</option>
+            <option value="Not Successful">Not Successful</option>
+        </select><br>
 
-    <label>Interview Outcome:</label>
-    <select name="outcome" onchange="toggleOther(this, 'outcome_other')">
-      <option value="">-- Select --</option>
-      <option value="Successful">Successful</option>
-      <option value="Pending Review">Pending Review</option>
-      <option value="Not Successful">Not Successful</option>
-      <option value="Other">Other</option>
-    </select>
-    <input type="text" name="outcome" id="outcome_other" style="display:none;" placeholder="Specify other...">
+        <label for="willing">Willing to Join?</label>
+        <select id="willing" name="willing">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br>
 
-    <label>Willing to Join?</label>
-    <select name="willing">
-      <option value="">-- Select --</option>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-      <option value="Maybe">Maybe</option>
-    </select>
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date"><br>
 
-    <label>Confirmed Start Date:</label>
-    <input type="date" name="start_date">
+        <label for="no_show">No Show (First Day):</label>
+        <select id="no_show" name="no_show">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br>
 
-    <label>No Show on First Day?</label>
-    <select name="no_show">
-      <option value="">-- Select --</option>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
+        <label for="no_show_reason">Reason for No Show:</label>
+        <textarea id="no_show_reason" name="no_show_reason"></textarea><br>
 
-    <label>Reason for Not Coming:</label>
-    <input type="text" name="no_show_reason">
+        <label for="message_status">Message Status:</label>
+        <select id="message_status" name="message_status">
+            <option value="Not Sent">Not Sent</option>
+            <option value="Sent">Sent</option>
+        </select><br>
 
-    <label>Message Status:</label>
-    <select name="message_status">
-      <option value="">-- Select --</option>
-      <option value="Sent Welcome Message">Sent Welcome Message</option>
-      <option value="Awaiting Confirmation">Awaiting Confirmation</option>
-      <option value="Not Sent">Not Sent</option>
-    </select>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+        </select><br>
 
-    <label>Overall Status:</label>
-    <select name="status">
-      <option value="Active">Active</option>
-      <option value="Inactive">Inactive</option>
-      <option value="Waiting">Waiting</option>
-    </select>
+        <label for="notes">Additional Notes:</label>
+        <textarea id="notes" name="notes"></textarea><br>
 
-    <label>Available From (if delaying):</label>
-    <input type="date" name="available_from">
+        <label for="available_from">Available From:</label>
+        <input type="date" id="available_from" name="available_from"><br>
 
-    <label>Additional Notes:</label>
-    <textarea name="notes"></textarea>
+        <button type="submit">Add Candidate</button>
+    </form>
 
-    <br><br>
-    <button type="submit">Save Candidate</button>
-  </form>
-
-  <script>
-    function toggleOther(select, otherId) {
-      const otherInput = document.getElementById(otherId);
-      if (select.value === 'Other') {
-        otherInput.style.display = 'block';
-        select.name = '';
-        otherInput.name = select.getAttribute('name');
-      } else {
-        otherInput.style.display = 'none';
-        otherInput.name = '';
-        select.name = otherInput.getAttribute('name');
-      }
-    }
-  </script>
+    <a href="{{ url_for('index') }}">Back to Candidates List</a>
 </body>
 </html>
