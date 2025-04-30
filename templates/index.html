@@ -1,40 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Catzonia Hiring Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <title>Catzonia Candidate Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Catzonia Hiring Tracker 🐾</h1>
-    <a href="/add" class="button">+ Add New Candidate</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Branch</th>
-                <th>Interview</th>
-                <th>Outcome</th>
-                <th>Start Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in candidates %}
-            <tr>
-                <td>{{ c.name }}</td>
-                <td>{{ c.contact }}</td>
-                <td>{{ c.branch }}</td>
-                <td>{{ c.interview_date }} ({{ c.interview_status }})</td>
-                <td>{{ c.outcome }}</td>
-                <td>{{ c.start_date }}</td>
-                <td>{{ c.status }}</td>
-                <td><a href="/candidate/{{ c.id }}">View</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <h1>Catzonia Candidate Tracker</h1>
+
+  <form method="POST" action="/add">
+    <label for="interview_status">Interview Status:</label>
+    <select name="interview_status" id="interview_status" onchange="toggleOther('interview_status')">
+      <option value="">-- Select --</option>
+      <option>Scheduled</option>
+      <option>Completed</option>
+      <option>Not Scheduled</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" name="interview_status_other" id="interview_status_other" placeholder="Please specify..." style="display:none;">
+
+    <label for="interview_outcome">Interview Outcome:</label>
+    <select name="interview_outcome" id="interview_outcome" onchange="toggleOther('interview_outcome')">
+      <option value="">-- Select --</option>
+      <option>Successful</option>
+      <option>Pending Review</option>
+      <option>Not Successful</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" name="interview_outcome_other" id="interview_outcome_other" placeholder="Please specify..." style="display:none;">
+
+    <label for="willing_to_join">Willing to Join?</label>
+    <select name="willing_to_join" id="willing_to_join">
+      <option value="">-- Select --</option>
+      <option>Yes</option>
+      <option>No</option>
+      <option>Maybe</option>
+    </select>
+
+    <label for="overall_status">Overall Status:</label>
+    <select name="overall_status" id="overall_status">
+      <option value="">-- Select --</option>
+      <option>Active</option>
+      <option>Waiting</option>
+      <option>Inactive</option>
+      <option>Rejected</option>
+    </select>
+
+    <button type="submit">Add Candidate</button>
+  </form>
+
+  <h2>Candidate List</h2>
+  <table>
+    <tr>
+      <th>Interview Status</th>
+      <th>Interview Outcome</th>
+      <th>Willing to Join?</th>
+      <th>Status</th>
+    </tr>
+    {% for c in candidates %}
+    <tr>
+      <td>{{ c.interview_status }}</td>
+      <td>{{ c.interview_outcome }}</td>
+      <td>{{ c.willing_to_join }}</td>
+      <td>{{ c.overall_status }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <script>
+    function toggleOther(field) {
+      const select = document.getElementById(field);
+      const otherInput = document.getElementById(field + '_other');
+      if (select.value === 'Other') {
+        otherInput.style.display = 'block';
+      } else {
+        otherInput.style.display = 'none';
+        otherInput.value = '';
+      }
+    }
+  </script>
 </body>
 </html>
