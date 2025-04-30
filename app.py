@@ -1,214 +1,73 @@
-import os
-import re
-from io import BytesIO
-from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
-import pandas as pd
-import openpyxl
-from openpyxl.utils import get_column_letter, column_index_from_string
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, url_for
+import csv
+import uuid
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
-app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
+app = Flask(__name__)
+DATA_FILE = 'data/candidates.csv'
 
-# Configure upload folder
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
-
-ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def clean_filename(name, options=None):
-    """Clean filename with customizable character handling"""
-    if not name or pd.isna(name):
-        return {'cleaned': '', 'removed': []}
-    
-    options = options or {}
-    original = str(name).strip()
-    removed_chars = []
-    
-    # Space handling
-    space_option = options.get('space_replacement', 'remove')
-    if space_option == 'underscore':
-        original = original.replace(' ', '_')
-    elif space_option == 'hyphen':
-        original = original.replace(' ', '-')
-    elif space_option == 'remove':
-        original = original.replace(' ', '')
-    
-    # Case handling
-    case_option = options.get('text_case', 'original')
-    if case_option == 'lower':
-        original = original.lower()
-    elif case_option == 'upper':
-        original = original.upper()
-    elif case_option == 'title':
-        original = original.title()
-    
-    # Character removal
-    chars_to_remove = []
-    special_chars = [
-        ('/', 'keep_slash'),
-        ('\\\\', 'keep_backslash'),
-        (':', 'keep_colon'),
-        ('\\*', 'keep_asterisk'),
-        ('\\?', 'keep_question'),
-        ('"', 'keep_dquote'),
-        ('<', 'keep_ltgt'),
-        ('>', 'keep_ltgt'),
-        ('\\|', 'keep_pipe')
-    ]
-    
-    for char, option in special_chars:
-        if not options.get(option, True):
-            chars_to_remove.append(char)
-    
-    # Always remove control characters
-    chars_to_remove.extend(['\\x00-\\x1F'])
-    
-    # Remove duplicate symbols if enabled
-    if options.get('remove_repeats'):
-        original = re.sub(r'([-_\.])\1+', r'\1', original)
-    
-    pattern = f'[{"".join(chars_to_remove)}]' if chars_to_remove else None
-    
-    cleaned = original
-    if pattern:
-        removed_chars = list(set(re.findall(pattern, cleaned)))
-        cleaned = re.sub(pattern, '', cleaned).strip()
-    
-    return {
-        'original': str(name).strip(),
-        'cleaned': cleaned,
-        'removed': removed_chars
-    }
-
-@app.route('/', methods=['GET'])
-def home():
-    return render_template('index.html')
-
-@app.route('/preview', methods=['POST'])
-def preview():
-    data = request.json
-    result = clean_filename(data.get('text', ''), data.get('options', {}))
-    return jsonify(result)
-
-@app.route('/process', methods=['POST'])
-def process_files():
-    if 'files[]' not in request.files:
-        flash('No files uploaded')
-        return redirect(url_for('home'))
-    
-    files = request.files.getlist('files[]')
-    options = request.form.to_dict()
-    results = []
-    
-    for file in files:
-        if file.filename == '':
-            flash('No selected file')
-            continue
-            
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            try:
-                if filename.endswith(('.xlsx', '.xls')):
-                    wb = openpyxl.load_workbook(filepath, read_only=True)
-                    sheet_name = options.get('sheet', '')
-                    sheet = wb[sheet_name] if sheet_name in wb.sheetnames else wb.active
-                    
-                    col_letter = options.get('column', 'A')
-                    col_idx = column_index_from_string(col_letter)
-                    start_row = int(options.get('start_row', 1))
-                    end_row = int(options.get('end_row', sheet.max_row))
-                    
-                    for row in sheet.iter_rows(
-                        min_row=start_row,
-                        max_row=end_row,
-                        min_col=col_idx,
-                        max_col=col_idx,
-                        values_only=True
-                    ):
-                        if row and row[0] and str(row[0]).strip():
-                            result = clean_filename(row[0], options)
-                            results.append(result)
-                
-                elif filename.endswith('.csv'):
-                    encoding = options.get('encoding', 'utf-8')
-                    header = int(options.get('header_row', 0))
-                    df = pd.read_csv(filepath, encoding=encoding, header=None if header == 0 else header-1)
-                    if not df.empty:
-                        col = int(options.get('column', 0)) - 1
-                        for value in df.iloc[:, col].astype(str):
-                            if value.strip():
-                                result = clean_filename(value, options)
-                                results.append(result)
-            
-            except Exception as e:
-                flash(f"Error processing {filename}: {str(e)}")
-            finally:
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-    
-    if not results:
-        flash("No valid filenames found to process")
-        return redirect(url_for('home'))
-    
-    return render_template('results.html', results=results)
-
-@app.route('/export', methods=['POST'])
-def export():
+# Load candidate data from CSV
+def load_candidates():
+    candidates = []
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No data received'}), 400
-            
-        format = data.get('format', 'excel')
-        results = data.get('results', [])
-        
-        if not results:
-            return jsonify({'error': 'No data to export'}), 400
-        
-        df = pd.DataFrame(results)
-        
-        if format == 'csv':
-            output = BytesIO()
-            df.to_csv(output, index=False)
-            output.seek(0)
-            return send_file(
-                output,
-                mimetype='text/csv',
-                as_attachment=True,
-                download_name='cleaned_filenames.csv'
-            )
-        elif format == 'json':
-            output = BytesIO()
-            df.to_json(output, orient='records')
-            output.seek(0)
-            return send_file(
-                output,
-                mimetype='application/json',
-                as_attachment=True,
-                download_name='cleaned_filenames.json'
-            )
-        else:  # Excel
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False)
-            output.seek(0)
-            return send_file(
-                output,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                as_attachment=True,
-                download_name='cleaned_filenames.xlsx'
-            )
+        with open(DATA_FILE, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                candidates.append(row)
+    except FileNotFoundError:
+        pass
+    return candidates
+
+# Save a single candidate
+def save_candidate(candidate):
+    fieldnames = [
+        'id', 'name', 'contact', 'position', 'branch', 'interview_date',
+        'interview_status', 'outcome', 'willing', 'start_date', 'no_show',
+        'no_show_reason', 'message_status', 'status', 'notes', 'available_from'
+    ]
+    try:
+        with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if f.tell() == 0:
+                writer.writeheader()
+            writer.writerow(candidate)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print("Error saving candidate:", e)
+
+@app.route('/')
+def index():
+    candidates = load_candidates()
+    return render_template('index.html', candidates=candidates)
+
+@app.route('/candidate/<id>')
+def view_candidate(id):
+    candidates = load_candidates()
+    candidate = next((c for c in candidates if c['id'] == id), None)
+    return render_template('candidate.html', candidate=candidate)
+
+@app.route('/add', methods=['GET', 'POST'])
+def add_candidate():
+    if request.method == 'POST':
+        candidate = {
+            'id': str(uuid.uuid4()),
+            'name': request.form['name'],
+            'contact': request.form['contact'],
+            'position': request.form['position'],
+            'branch': request.form['branch'],
+            'interview_date': request.form['interview_date'],
+            'interview_status': request.form.get('interview_status', ''),
+            'outcome': request.form.get('outcome', ''),
+            'willing': request.form.get('willing', ''),
+            'start_date': request.form.get('start_date', ''),
+            'no_show': request.form.get('no_show', ''),
+            'no_show_reason': request.form.get('no_show_reason', ''),
+            'message_status': request.form.get('message_status', ''),
+            'status': request.form.get('status', 'Active'),
+            'notes': request.form.get('notes', ''),
+            'available_from': request.form.get('available_from', '')
+        }
+        save_candidate(candidate)
+        return redirect(url_for('index'))
+    return render_template('add_candidate.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
