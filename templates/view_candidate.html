@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ candidate['name'] }} - Details{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2><i class="fas fa-user cat-icon"></i> {{ candidate['name'] }}</h2>
+        
+        <div class="candidate-details">
+            <div class="detail-row">
+                <span class="detail-label">Position:</span>
+                <span class="detail-value">{{ candidate['position'] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Branch:</span>
+                <span class="detail-value">{{ candidate['branch'] }}</span>
+            </div>
+            <!-- Add all other fields similarly -->
+            
+            <div class="actions">
+                <a href="{{ url_for('edit_candidate', id=candidate['id']) }}" class="btn">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{{ url_for('delete_candidate', id=candidate['id']) }}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+                <a href="{{ url_for('index') }}" class="btn">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
