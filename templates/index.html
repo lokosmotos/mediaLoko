@@ -224,3 +224,66 @@
     </script>
 </body>
 </html>
+<script>
+    // Dropdown functionality
+    document.querySelectorAll('.dropdown-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.classList.toggle('active');
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('.dropdown-btn')) {
+            document.querySelectorAll('.dropdown').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+
+    // Preset buttons
+    const presets = {
+        windows: {
+            keep_slash: false,
+            keep_backslash: false,
+            keep_colon: false,
+            keep_asterisk: false,
+            keep_question: false,
+            keep_dquote: false,
+            keep_ltgt: false,
+            keep_pipe: false
+        },
+        strict: {
+            keep_slash: false,
+            keep_backslash: false,
+            keep_colon: false,
+            keep_asterisk: false,
+            keep_question: false,
+            keep_dquote: false,
+            keep_ltgt: false,
+            keep_pipe: false
+        },
+        keepall: {
+            keep_slash: true,
+            keep_backslash: true,
+            keep_colon: true,
+            keep_asterisk: true,
+            keep_question: true,
+            keep_dquote: true,
+            keep_ltgt: true,
+            keep_pipe: true
+        }
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const preset = presets[this.dataset.preset];
+            for (const [key, value] of Object.entries(preset)) {
+                const checkbox = document.querySelector(`input[name="${key}"]`);
+                if (checkbox) {
+                    checkbox.checked = value;
+                }
+            }
+        });
+    });
+</script>
