@@ -5,6 +5,7 @@ import uuid
 app = Flask(__name__)
 DATA_FILE = 'data/candidates.csv'
 
+# Load candidates from the CSV file
 def load_candidates():
     candidates = []
     try:
@@ -16,6 +17,7 @@ def load_candidates():
         pass
     return candidates
 
+# Save a candidate to the CSV file
 def save_candidate(candidate):
     fieldnames = [
         'id', 'name', 'contact', 'position', 'branch', 'interview_date',
@@ -24,26 +26,29 @@ def save_candidate(candidate):
     ]
     with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if f.tell() == 0:
+        if f.tell() == 0:  # If the file is empty, write the header row
             writer.writeheader()
         writer.writerow(candidate)
 
+# Route for the home page, listing all candidates
 @app.route('/')
 def index():
     candidates = load_candidates()
     return render_template('index.html', candidates=candidates)
 
+# Route for viewing individual candidate details
 @app.route('/candidate/<id>')
 def view_candidate(id):
     candidates = load_candidates()
     candidate = next((c for c in candidates if c['id'] == id), None)
     return render_template('candidate.html', candidate=candidate)
 
+# Route for adding a new candidate
 @app.route('/add', methods=['GET', 'POST'])
 def add_candidate():
     if request.method == 'POST':
         candidate = {
-            'id': str(uuid.uuid4()),
+            'id': str(uuid.uuid4()),  # Generate a unique ID
             'name': request.form['name'],
             'contact': request.form['contact'],
             'position': request.form['position'],
