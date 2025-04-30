@@ -165,3 +165,80 @@ body {
     color: var(--primary-yellow);
     margin-top: 30px;
 }
+
+/* Form Styles */
+.candidate-form {
+    margin-top: 20px;
+}
+
+.form-columns {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.form-column {
+    flex: 1;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--light-black);
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-yellow);
+    outline: none;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: var(--primary-yellow);
+    color: var(--dark-black);
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-black);
+    color: var(--primary-yellow);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-columns {
+        flex-direction: column;
+        gap: 0;
+    }
+}
