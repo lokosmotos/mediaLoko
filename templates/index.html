@@ -1,40 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Catzonia Hiring Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <h1>Catzonia Hiring Tracker 🐾</h1>
-    <a href="/add" class="button">+ Add New Candidate</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Branch</th>
-                <th>Interview</th>
-                <th>Outcome</th>
-                <th>Start Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in candidates %}
-            <tr>
-                <td>{{ c.name }}</td>
-                <td>{{ c.contact }}</td>
-                <td>{{ c.branch }}</td>
-                <td>{{ c.interview_date }} ({{ c.interview_status }})</td>
-                <td>{{ c.outcome }}</td>
-                <td>{{ c.start_date }}</td>
-                <td>{{ c.status }}</td>
-                <td><a href="/candidate/{{ c.id }}">View</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Candidates List{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2><i class="fas fa-users cat-icon"></i> Candidates List</h2>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Branch</th>
+                    <th>Interview Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in candidates %}
+                <tr>
+                    <td>{{ candidate['name'] }}</td>
+                    <td>{{ candidate['position'] }}</td>
+                    <td>{{ candidate['branch'] }}</td>
+                    <td>{{ candidate['interview_date']|format_date }}</td>
+                    <td>
+                        <span class="status-badge 
+                            {% if candidate['status'] == 'Active' %}active{% else %}inactive{% endif %}">
+                            {{ candidate['status'] }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('view_candidate', id=candidate['id']) }}" class="btn">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('edit_candidate', id=candidate['id']) }}" class="btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">No candidates found. Add your first candidate!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <a href="{{ url_for('add_candidate') }}" class="btn">
+            <i class="fas fa-plus"></i> Add New Candidate
+        </a>
+    </div>
+{% endblock %}
