@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Catzonia Hiring Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Catzonia Candidate Pool 🐾</h1>
+    <a href="/add">➕ Add Candidate</a> | <a href="/report">📊 Monthly Report</a>
+  </header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Status</th>
+        <th>Start Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in candidates %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.branch }}</td>
+        <td><span class="status {{ c.status }}">{{ c.status }}</span></td>
+        <td>{{ c.start_date or '-' }}</td>
+        <td>
+          <a href="/candidate/{{ c.id }}">🔍 View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
 
