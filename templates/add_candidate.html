@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Candidate</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Add New Candidate</h1>
+    <form method="POST">
+        <label>Name: <input type="text" name="name" required></label><br>
+        <label>Contact: <input type="text" name="contact" required></label><br>
+        <label>Position Applied: <input type="text" name="position" required></label><br>
+        <label>Branch Preference: <input type="text" name="branch"></label><br>
+        <label>Interview Date: <input type="date" name="interview_date"></label><br>
+        <label>Interview Status: <input type="text" name="interview_status"></label><br>
+        <label>Interview Outcome: <input type="text" name="outcome"></label><br>
+        <label>Willing to Join? <input type="text" name="willing"></label><br>
+        <label>Confirmed Start Date: <input type="date" name="start_date"></label><br>
+        <label>Not Coming on First Day? <input type="text" name="no_show"></label><br>
+        <label>Reason for Not Coming: <input type="text" name="no_show_reason"></label><br>
+        <label>Message Status: <input type="text" name="message_status"></label><br>
+        <label>Overall Status: <input type="text" name="status" value="Active"></label><br>
+        <label>Available From (if not now): <input type="text" name="available_from"></label><br>
+        <label>Notes: <textarea name="notes"></textarea></label><br>
+        <button type="submit">Save</button>
+        <a href="/" class="button">Cancel</a>
+    </form>
+</body>
+</html>
