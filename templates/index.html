@@ -2,36 +2,181 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SRT Aligner</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Filename Cleaner</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-language"></i> Bilingual Subtitle Aligner</h1>
-        
-        <form id="uploadForm" enctype="multipart/form-data">
-            <div class="upload-box">
-                <input type="file" name="en_srt" accept=".srt" required>
-                <span>English SRT</span>
+    <div class="app-container">
+        <header class="app-header">
+            <h1><i class="fas fa-file-clean"></i> FilenameCleaner Pro</h1>
+            <p class="tagline">Make your filenames Windows-perfect</p>
+        </header>
+
+        <main class="app-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="upload">
+                        <i class="fas fa-file-upload"></i> Upload File
+                    </button>
+                    <button class="tab-btn" data-tab="paste">
+                        <i class="fas fa-paste"></i> Paste Text
+                    </button>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="cleaner-form">
+                    <div class="tab-content active" id="upload-tab">
+                        <div class="form-group">
+                            <label for="file">
+                                <i class="fas fa-file-excel"></i> Select Excel/CSV File
+                            </label>
+                            <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls">
+                        </div>
+
+                        <div class="excel-options hidden">
+                            <div class="form-group">
+                                <label for="sheet"><i class="fas fa-table"></i> Worksheet</label>
+                                <select id="sheet" name="sheet"></select>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="column"><i class="fas fa-columns"></i> Column</label>
+                                    <select id="column" name="column"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="start_row"><i class="fas fa-arrow-down"></i> Start Row</label>
+                                    <input type="number" id="start_row" name="start_row" min="1" value="7">
+                                </div>
+                                <div class="form-group">
+                                    <label for="end_row"><i class="fas fa-arrow-up"></i> End Row</label>
+                                    <input type="number" id="end_row" name="end_row" min="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="paste-tab">
+                        <div class="form-group">
+                            <label for="text">
+                                <i class="fas fa-align-left"></i> Paste Filenames (one per line)
+                            </label>
+                            <textarea id="text" name="text" placeholder="Example:&#10;My/File:Name*.txt&#10;Another|File?.jpg"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="char-options">
+                        <h3><i class="fas fa-sliders-h"></i> Character Handling</h3>
+                        <div class="options-grid">
+                            {% for char, icon, name in [
+                                ('/', 'slash', 'Forward Slash'),
+                                ('\\', 'backslash', 'Backslash'),
+                                (':', 'colon', 'Colon'),
+                                ('*', 'asterisk', 'Asterisk'),
+                                ('?', 'question', 'Question Mark'),
+                                ('"', 'quote-right', 'Double Quote'),
+                                ('<>', 'code', 'Angle Brackets'),
+                                ('|', 'grip-lines-vertical', 'Pipe')
+                            ] %}
+                            <label class="char-option">
+                                <input type="checkbox" name="keep_{{ icon }}" checked>
+                                <i class="fas fa-{{ icon }}"></i> {{ name }} ({{ char }})
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-magic"></i> Clean & Download Excel
+                    </button>
+                </form>
             </div>
-            
-            <div class="upload-box">
-                <input type="file" name="zh_srt" accept=".srt" required>
-                <span>Chinese SRT</span>
-            </div>
-            
-            <button type="submit">
-                <i class="fas fa-robot"></i> Auto-Align
-            </button>
-        </form>
-        
-        <div id="loading" style="display:none;">
-            <div class="spinner"></div>
-            <p>Analyzing subtitles...</p>
-        </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2023 FilenameCleaner Pro | Powered by Flask</p>
+        </footer>
     </div>
 
-    <script src="/static/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show selected tab content
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // File upload handling
+        document.getElementById('file').addEventListener('change', function() {
+            const optionsDiv = document.querySelector('.excel-options');
+            
+            if (this.files.length) {
+                optionsDiv.classList.remove('hidden');
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+
+                        // Populate sheet selector
+                        const sheetSelect = document.getElementById('sheet');
+                        sheetSelect.innerHTML = '';
+                        workbook.SheetNames.forEach(sheet => {
+                            const option = document.createElement('option');
+                            option.value = sheet;
+                            option.textContent = sheet;
+                            sheetSelect.appendChild(option);
+                        });
+
+                        // Populate column selector (A-Z)
+                        const columnSelect = document.getElementById('column');
+                        columnSelect.innerHTML = '';
+                        for (let i = 0; i < 26; i++) {
+                            const option = document.createElement('option');
+                            option.value = String.fromCharCode(65 + i);
+                            option.textContent = `Column ${String.fromCharCode(65 + i)}`;
+                            columnSelect.appendChild(option);
+                        }
+
+                        // Set default end row
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const range = XLSX.utils.decode_range(firstSheet['!ref']);
+                        document.getElementById('end_row').value = range.e.r + 1;
+                    } catch (error) {
+                        alert('Error reading file: ' + error.message);
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
+            } else {
+                optionsDiv.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
