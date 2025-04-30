@@ -49,16 +49,17 @@ def clean_filename(name, options=None):
     # Character removal
     chars_to_remove = []
     special_chars = [
-        ('/', 'keep_slash'),
-        ('\\\\', 'keep_backslash'),
-        (':', 'keep_colon'),
-        ('\\*', 'keep_asterisk'),
-        ('\\?', 'keep_question'),
-        ('"', 'keep_dquote'),
-        ('<', 'keep_ltgt'),
-        ('>', 'keep_ltgt'),
-        ('\\|', 'keep_pipe')
-    ]
+    ('/', 'keep_slash'),
+    ('\\', 'keep_backslash'),
+    (':', 'keep_colon'),
+    ('*', 'keep_asterisk'),
+    ('?', 'keep_question'),
+    ('"', 'keep_dquote'),
+    ('<', 'keep_ltgt'),
+    ('>', 'keep_ltgt'),
+    ('|', 'keep_pipe')
+]
+
     
     for char, option in special_chars:
         if not options.get(option, True):
@@ -112,11 +113,12 @@ def process_files():
             
             try:
                 if filename.endswith(('.xlsx', '.xls')):
-                    wb = openpyxl.load_workbook(filepath, read_only=True)
+                    from openpyxl.utils import column_index_from_string
+                    wb = openpyxl.load_workbook(filepath, read_only=False)
                     sheet_name = options.get('sheet')
                     sheet = wb[sheet_name] if sheet_name else wb.active
                     col_letter = options.get('column', 'A')
-                    col_idx = get_column_letter(column_index_from_string(col_letter))
+                    col_idx = column_index_from_string(col_letter)
                     start_row = int(options.get('start_row', 1))
                     end_row = int(options.get('end_row', sheet.max_row))
                     
