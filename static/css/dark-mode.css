@@ -1,0 +1,39 @@
+[data-theme="dark"] {
+    --light: #1a1a1a;
+    --dark: #f0f0f0;
+    --gray: #a0a0a0;
+    --card-bg: #2d2d2d;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] body {
+    background-color: var(--light);
+    color: var(--dark);
+}
+
+[data-theme="dark"] .tool-container,
+[data-theme="dark"] .results-container,
+[data-theme="dark"] .accordion-item,
+[data-theme="dark"] .preview-card {
+    background-color: var(--card-bg);
+    border-color: #444;
+}
+
+[data-theme="dark"] .accordion-btn:hover,
+[data-theme="dark"] .drop-zone:hover,
+[data-theme="dark"] .results-table tr:hover {
+    background-color: #333;
+}
+
+[data-theme="dark"] .results-table th,
+[data-theme="dark"] .results-table td {
+    border-color: #444;
+}
+
+[data-theme="dark"] .theme-toggle {
+    color: var(--dark);
+}
+
+[data-theme="dark"] .theme-toggle i {
+    color: var(--primary);
+}
