@@ -157,26 +157,27 @@ def edit_candidate(id):
         return redirect(url_for('candidate_list'))
     
     if request.method == 'POST':
+        # Update all fields
         candidate.update({
-            'name': request.form.get('name', '').strip(),
-            'contact': request.form.get('contact', '').strip(),
-            'position': request.form.get('position', '').strip(),
-            'branch': request.form.get('branch', '').strip(),
-            'interview_date': request.form.get('interview_date', ''),
-            'interview_status': request.form.get('interview_status', 'Pending'),
-            'outcome': request.form.get('outcome', ''),
-            'willing': request.form.get('willing', ''),
-            'start_date': request.form.get('start_date', ''),
-            'no_show': request.form.get('no_show', 'No'),
-            'no_show_reason': request.form.get('no_show_reason', '').strip(),
-            'message_status': request.form.get('message_status', 'Not Sent'),
-            'status': request.form.get('status', 'Active'),
-            'notes': request.form.get('notes', '').strip(),
-            'available_from': request.form.get('available_from', '')
+            'name': request.form.get('name'),
+            'contact': request.form.get('contact'),
+            'position': request.form.get('position'),
+            'branch': request.form.get('branch'),
+            'interview_date': request.form.get('interview_date'),
+            'interview_status': request.form.get('interview_status'),
+            'outcome': request.form.get('outcome'),
+            'willing': request.form.get('willing'),
+            'start_date': request.form.get('start_date'),
+            'no_show': request.form.get('no_show'),
+            'no_show_reason': request.form.get('no_show_reason'),
+            'message_status': request.form.get('message_status'),
+            'status': request.form.get('status'),
+            'notes': request.form.get('notes'),
+            'available_from': request.form.get('available_from')
         })
         
         save_all_candidates(candidates)
-        flash(f"{candidate['name']} updated successfully!", 'success')
+        flash(f'{candidate["name"]} updated successfully!', 'success')
         return redirect(url_for('view_candidate', id=id))
     
     return render_template('edit_candidate.html', candidate=candidate)
