@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-
-{% block content %}
-    <h1>Upload Receipt</h1>
-    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
-        <input type="file" name="receipt" accept="image/*,.pdf" required>
-        <button type="submit">Process Receipt</button>
-    </form>
-{% endblock %}
