@@ -5,7 +5,6 @@ import uuid
 app = Flask(__name__)
 DATA_FILE = 'data/candidates.csv'
 
-# Load candidate data from CSV
 def load_candidates():
     candidates = []
     try:
@@ -17,21 +16,17 @@ def load_candidates():
         pass
     return candidates
 
-# Save a single candidate
 def save_candidate(candidate):
     fieldnames = [
         'id', 'name', 'contact', 'position', 'branch', 'interview_date',
         'interview_status', 'outcome', 'willing', 'start_date', 'no_show',
         'no_show_reason', 'message_status', 'status', 'notes', 'available_from'
     ]
-    try:
-        with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if f.tell() == 0:
-                writer.writeheader()
-            writer.writerow(candidate)
-    except Exception as e:
-        print("Error saving candidate:", e)
+    with open(DATA_FILE, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if f.tell() == 0:
+            writer.writeheader()
+        writer.writerow(candidate)
 
 @app.route('/')
 def index():
