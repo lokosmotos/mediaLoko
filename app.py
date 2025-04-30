@@ -4,7 +4,7 @@ from io import BytesIO
 from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
 import pandas as pd
 import openpyxl
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter, column_index_from_string
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -14,9 +14,9 @@ app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
 
 ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -36,6 +36,8 @@ def clean_filename(name, options=None):
         original = original.replace(' ', '_')
     elif space_option == 'hyphen':
         original = original.replace(' ', '-')
+    elif space_option == 'remove':
+        original = original.replace(' ', '')
     
     # Case handling
     case_option = options.get('text_case', 'original')
@@ -49,17 +51,16 @@ def clean_filename(name, options=None):
     # Character removal
     chars_to_remove = []
     special_chars = [
-    ('/', 'keep_slash'),
-    ('\\', 'keep_backslash'),
-    (':', 'keep_colon'),
-    ('*', 'keep_asterisk'),
-    ('?', 'keep_question'),
-    ('"', 'keep_dquote'),
-    ('<', 'keep_ltgt'),
-    ('>', 'keep_ltgt'),
-    ('|', 'keep_pipe')
-]
-
+        ('/', 'keep_slash'),
+        ('\\\\', 'keep_backslash'),
+        (':', 'keep_colon'),
+        ('\\*', 'keep_asterisk'),
+        ('\\?', 'keep_question'),
+        ('"', 'keep_dquote'),
+        ('<', 'keep_ltgt'),
+        ('>', 'keep_ltgt'),
+        ('\\|', 'keep_pipe')
+    ]
     
     for char, option in special_chars:
         if not options.get(option, True):
@@ -106,6 +107,10 @@ def process_files():
     results = []
     
     for file in files:
+        if file.filename == '':
+            flash('No selected file')
+            continue
+            
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -113,10 +118,10 @@ def process_files():
             
             try:
                 if filename.endswith(('.xlsx', '.xls')):
-                    from openpyxl.utils import column_index_from_string
-                    wb = openpyxl.load_workbook(filepath, read_only=False)
-                    sheet_name = options.get('sheet')
-                    sheet = wb[sheet_name] if sheet_name else wb.active
+                    wb = openpyxl.load_workbook(filepath, read_only=True)
+                    sheet_name = options.get('sheet', '')
+                    sheet = wb[sheet_name] if sheet_name in wb.sheetnames else wb.active
+                    
                     col_letter = options.get('column', 'A')
                     col_idx = column_index_from_string(col_letter)
                     start_row = int(options.get('start_row', 1))
@@ -129,14 +134,17 @@ def process_files():
                         max_col=col_idx,
                         values_only=True
                     ):
-                        if row[0] and str(row[0]).strip():
+                        if row and row[0] and str(row[0]).strip():
                             result = clean_filename(row[0], options)
                             results.append(result)
                 
                 elif filename.endswith('.csv'):
-                    df = pd.read_csv(filepath)
+                    encoding = options.get('encoding', 'utf-8')
+                    header = int(options.get('header_row', 0))
+                    df = pd.read_csv(filepath, encoding=encoding, header=None if header == 0 else header-1)
                     if not df.empty:
-                        for value in df.iloc[:, 0].astype(str):
+                        col = int(options.get('column', 0)) - 1
+                        for value in df.iloc[:, col].astype(str):
                             if value.strip():
                                 result = clean_filename(value, options)
                                 results.append(result)
@@ -144,7 +152,8 @@ def process_files():
             except Exception as e:
                 flash(f"Error processing {filename}: {str(e)}")
             finally:
-                os.remove(filepath)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
     
     if not results:
         flash("No valid filenames found to process")
@@ -154,36 +163,52 @@ def process_files():
 
 @app.route('/export', methods=['POST'])
 def export():
-    data = request.json
-    format = data.get('format', 'excel')
-    results = data.get('results', [])
-    
-    if not results:
-        return jsonify({'error': 'No data to export'}), 400
-    
-    df = pd.DataFrame(results)
-    
-    if format == 'csv':
-        output = df.to_csv(index=False)
-        mimetype = 'text/csv'
-        ext = 'csv'
-    elif format == 'json':
-        output = df.to_json(orient='records')
-        mimetype = 'application/json'
-        ext = 'json'
-    else:
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
-        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ext = 'xlsx'
-    
-    return send_file(
-        output if format == 'excel' else BytesIO(output.encode()),
-        mimetype=mimetype,
-        as_attachment=True,
-        download_name=f'cleaned_filenames.{ext}'
-    )
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
+            
+        format = data.get('format', 'excel')
+        results = data.get('results', [])
+        
+        if not results:
+            return jsonify({'error': 'No data to export'}), 400
+        
+        df = pd.DataFrame(results)
+        
+        if format == 'csv':
+            output = BytesIO()
+            df.to_csv(output, index=False)
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='text/csv',
+                as_attachment=True,
+                download_name='cleaned_filenames.csv'
+            )
+        elif format == 'json':
+            output = BytesIO()
+            df.to_json(output, orient='records')
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/json',
+                as_attachment=True,
+                download_name='cleaned_filenames.json'
+            )
+        else:  # Excel
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name='cleaned_filenames.xlsx'
+            )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
