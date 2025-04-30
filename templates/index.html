@@ -78,37 +78,81 @@
                     </div>
 
                     <div class="char-options">
-                        <h3><i class="fas fa-sliders-h"></i> Character Handling</h3>
-                        <div class="options-grid">
-                            {% for char, icon, name in [
-                                ('/', 'slash', 'Forward Slash'),
-                                ('\\', 'backslash', 'Backslash'),
-                                (':', 'colon', 'Colon'),
-                                ('*', 'asterisk', 'Asterisk'),
-                                ('?', 'question', 'Question Mark'),
-                                ('"', 'quote-right', 'Double Quote'),
-                                ('<>', 'code', 'Angle Brackets'),
-                                ('|', 'grip-lines-vertical', 'Pipe')
-                            ] %}
-                            <label class="char-option">
-                                <input type="checkbox" name="keep_{{ icon }}" checked>
-                                <i class="fas fa-{{ icon }}"></i> {{ name }} ({{ char }})
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn">
-                        <i class="fas fa-magic"></i> Clean & Download Excel
-                    </button>
-                </form>
+    <h3><i class="fas fa-sliders-h"></i> Character Handling</h3>
+    
+    <div class="dropdown-options">
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                <i class="fas fa-file-signature"></i> Special Characters
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_slash" checked>
+                    <i class="fas fa-slash"></i> Forward Slash (/)
+                </label>
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_backslash" checked>
+                    <i class="fas fa-backslash"></i> Backslash (\)
+                </label>
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_colon" checked>
+                    <i class="fas fa-colon"></i> Colon (:)
+                </label>
             </div>
-        </main>
-
-        <footer class="app-footer">
-            <p>© 2023 FilenameCleaner Pro | Powered by Flask</p>
-        </footer>
+        </div>
+        
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                <i class="fas fa-file-code"></i> Technical Characters
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_asterisk" checked>
+                    <i class="fas fa-asterisk"></i> Asterisk (*)
+                </label>
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_question" checked>
+                    <i class="fas fa-question"></i> Question Mark (?)
+                </label>
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_pipe" checked>
+                    <i class="fas fa-grip-lines-vertical"></i> Pipe (|)
+                </label>
+            </div>
+        </div>
+        
+        <div class="dropdown">
+            <button class="dropdown-btn">
+                <i class="fas fa-quote-right"></i> Quotes & Brackets
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_dquote" checked>
+                    <i class="fas fa-quote-right"></i> Double Quote (")
+                </label>
+                <label class="dropdown-item">
+                    <input type="checkbox" name="keep_ltgt" checked>
+                    <i class="fas fa-code"></i> Angle Brackets (<>)
+                </label>
+            </div>
+        </div>
     </div>
+    
+    <div class="quick-presets">
+        <button type="button" class="preset-btn" data-preset="windows">
+            <i class="fab fa-windows"></i> Windows Default
+        </button>
+        <button type="button" class="preset-btn" data-preset="strict">
+            <i class="fas fa-lock"></i> Strict Mode
+        </button>
+        <button type="button" class="preset-btn" data-preset="keepall">
+            <i class="fas fa-unlock"></i> Keep All
+        </button>
+    </div>
+</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
