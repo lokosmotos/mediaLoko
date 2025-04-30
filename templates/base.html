@@ -5,47 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Syida Web - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='cat-icon.png') }}">
 </head>
 <body>
+    <!-- Animated Cat Paw Background Elements -->
+    <div class="cat-decoration" style="top:10%; left:5%; transform:rotate(20deg);"></div>
+    <div class="cat-decoration floating" style="top:70%; right:8%; transform:rotate(-15deg);"></div>
+
     <header class="header">
-        <img src="{{ url_for('static', filename='cat-logo.png') }}" alt="Syida Logo" class="logo">
-        <h1>Syida Web <i class="fas fa-paw"></i> Hiring Tracker</h1>
+        <div class="container logo-container">
+            <img src="{{ url_for('static', filename='cat-logo.png') }}" alt="Syida Logo" class="logo">
+            <h1>Syida Hiring Tracker</h1>
+        </div>
     </header>
     
     <nav class="nav">
-        <div class="container">
-            <a href="{{ url_for('index') }}"><i class="fas fa-home cat-icon"></i>Home</a>
-            <a href="{{ url_for('add_candidate') }}"><i class="fas fa-plus cat-icon"></i>Add Candidate</a>
+        <div class="container nav-container">
+            <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="{{ url_for('add_candidate') }}" class="nav-link {% if request.path == '/add' %}active{% endif %}">
+                <i class="fas fa-user-plus"></i> Add Candidate
+            </a>
+            <a href="{{ url_for('candidate_list') }}" class="nav-link {% if request.path == '/candidates' %}active{% endif %}">
+                <i class="fas fa-users"></i> Candidates
+            </a>
         </div>
     </nav>
-
-    <nav class="nav">
-    <div class="nav-brand">
-        <img src="{{ url_for('static', filename='cat-logo.png') }}" class="logo">
-        <span>Syida Web</span>
-    </div>
-    <div class="nav-links">
-        <a href="{{ url_for('index') }}" class="active">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="{{ url_for('add_candidate') }}">
-            <i class="fas fa-user-plus"></i>
-            <span>Add Candidate</span>
-        </a>
-        <a href="{{ url_for('candidate_list') }}">
-            <i class="fas fa-users"></i>
-            <span>Candidates</span>
-        </a>
-    </div>
-</nav>
-
+    
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -54,7 +51,24 @@
     </main>
     
     <footer class="footer">
-        <p>&copy; 2023 Syida Web - Cat Business Hiring Tracker <i class="fas fa-cat"></i></p>
+        <div class="container">
+            <p>© 2023 Syida Web - The Purr-fect Hiring Solution <i class="fas fa-paw"></i></p>
+            <div class="cat-signature">
+                <img src="{{ url_for('static', filename='cat-signature.png') }}" alt="Cat Signature" width="100">
+            </div>
+        </div>
     </footer>
+
+    <script>
+        // Simple animation for form elements
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentNode.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentNode.classList.remove('focused');
+            });
+        });
+    </script>
 </body>
 </html>
