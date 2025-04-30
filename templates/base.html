@@ -19,7 +19,28 @@
             <a href="{{ url_for('add_candidate') }}"><i class="fas fa-plus cat-icon"></i>Add Candidate</a>
         </div>
     </nav>
-    
+
+    <nav class="nav">
+    <div class="nav-brand">
+        <img src="{{ url_for('static', filename='cat-logo.png') }}" class="logo">
+        <span>Syida Web</span>
+    </div>
+    <div class="nav-links">
+        <a href="{{ url_for('index') }}" class="active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('add_candidate') }}">
+            <i class="fas fa-user-plus"></i>
+            <span>Add Candidate</span>
+        </a>
+        <a href="{{ url_for('candidate_list') }}">
+            <i class="fas fa-users"></i>
+            <span>Candidates</span>
+        </a>
+    </div>
+</nav>
+
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
