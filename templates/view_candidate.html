@@ -25,6 +25,10 @@
                 </a>
                 <a href="{{ url_for('index') }}" class="btn">
                     <i class="fas fa-arrow-left"></i> Back to List
+
+                    <a href="{{ url_for('edit_candidate', id=candidate.id) }}" class="btn btn-primary">
+    <i class="fas fa-edit"></i> Edit Candidate
+</a>
                 </a>
             </div>
         </div>
