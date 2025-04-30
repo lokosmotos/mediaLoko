@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ candidate.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1><i class="fas fa-user-edit"></i> Edit Candidate</h1>
+    
+    <form method="POST">
+        <div class="form-columns">
+            <!-- Left Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="name">Full Name*</label>
+                    <input type="text" id="name" name="name" value="{{ candidate.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact">Contact Information*</label>
+                    <input type="text" id="contact" name="contact" value="{{ candidate.contact }}" required>
+                </div>
+                
+                <!-- Include all other fields similarly -->
+                <!-- Make sure each field has value="{{ candidate.field_name }}" -->
+            </div>
+            
+            <!-- Right Column -->
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="Active" {% if candidate.status == 'Active' %}selected{% endif %}>Active</option>
+                        <option value="Inactive" {% if candidate.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                
+                <!-- Include other right column fields -->
+            </div>
+        </div>
+        
+        <!-- Notes field -->
+        <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" name="notes">{{ candidate.notes }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="{{ url_for('view_candidate', id=candidate.id) }}" class="btn">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
