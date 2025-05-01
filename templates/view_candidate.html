@@ -1,36 +1,96 @@
 {% extends "base.html" %}
-{% block title %}{{ candidate['name'] }} - Details{% endblock %}
+{% block title %}{{ candidate.name }}{% endblock %}
 
 {% block content %}
+<div class="view-candidate">
+    <div class="candidate-header">
+        <h1>{{ candidate.name }}</h1>
+        <div class="actions">
+            <a href="{{ url_for('edit_candidate', id=candidate.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <form action="{{ url_for('delete_candidate', id=candidate.id) }}" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    
     <div class="card">
-        <h2><i class="fas fa-user cat-icon"></i> {{ candidate['name'] }}</h2>
-        
         <div class="candidate-details">
             <div class="detail-row">
                 <span class="detail-label">Position:</span>
-                <span class="detail-value">{{ candidate['position'] }}</span>
+                <span class="detail-value">{{ candidate.position }}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Branch:</span>
-                <span class="detail-value">{{ candidate['branch'] }}</span>
+                <span class="detail-value">{{ candidate.branch }}</span>
             </div>
-            <!-- Add all other fields similarly -->
-            
-            <div class="actions">
-                <a href="{{ url_for('edit_candidate', id=candidate['id']) }}" class="btn">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
-                <a href="{{ url_for('delete_candidate', id=candidate['id']) }}" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Delete
-                </a>
-                <a href="{{ url_for('index') }}" class="btn">
-                    <i class="fas fa-arrow-left"></i> Back to List
-
-                    <a href="{{ url_for('edit_candidate', id=candidate.id) }}" class="btn btn-primary">
-    <i class="fas fa-edit"></i> Edit Candidate
-</a>
-                </a>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="status-badge {{ candidate.status|lower }}">{{ candidate.status }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Interview Date:</span>
+                <span class="detail-value">{{ candidate.interview_date|format_date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Attitude Rating:</span>
+                <div class="attitude-rating">
+                    {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < candidate.attitude_rating|int %}filled{% endif %}"></i>
+                    {% endfor %}
+                </div>
             </div>
         </div>
+        
+        <div class="notes-section">
+            <h3>Notes</h3>
+            <p>{{ candidate.notes or 'No notes available' }}</p>
+        </div>
+        
+        <div class="message-section">
+            <h3>Send Message</h3>
+            <button class="btn btn-primary message-btn" data-candidate="{{ candidate.id }}">
+                <i class="fas fa-envelope"></i> Send Reminder
+            </button>
+        </div>
     </div>
+</div>
+
+<!-- Message Modal -->
+<div class="modal" id="messageModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3><i class="fas fa-envelope"></i> Send Message</h3>
+        <div class="form-group">
+            <label>Recipient</label>
+            <input type="text" id="recipient" class="form-control" value="{{ candidate.name }}" readonly>
+        </div>
+        <div class="form-group">
+            <label>Message Template</label>
+            <select id="messageTemplate" class="form-control">
+                <option value="">Custom Message</option>
+                <option value="first_day_reminder">First Day Reminder</option>
+                <option value="no_show_followup">No-Show Follow-up</option>
+                <option value="reschedule_request">Reschedule Request</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Message Content</label>
+            <textarea id="messageContent" class="form-control" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Send Options</label>
+            <div class="send-options">
+                <label><input type="radio" name="sendOption" checked> Send Now</label>
+                <label><input type="radio" name="sendOption"> Schedule for <input type="datetime-local" class="form-control"></label>
+            </div>
+        </div>
+        <button class="btn btn-primary send-btn">
+            <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+    </div>
+</div>
 {% endblock %}
