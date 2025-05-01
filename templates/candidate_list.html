@@ -2,41 +2,48 @@
 {% block title %}Candidate List{% endblock %}
 
 {% block content %}
-<div class="list-container">
+<div class="candidate-list">
     <div class="list-header">
-        <h2><i class="fas fa-users"></i> Candidate List</h2>
-        <div class="list-controls">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search candidates...">
-            </div>
-            <a href="{{ url_for('add_candidate') }}" class="btn-primary">
-                <i class="fas fa-plus"></i> Add New
-            </a>
-        </div>
+        <h1>Candidate Pool</h1>
+        <a href="{{ url_for('add_candidate') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Add New
+        </a>
     </div>
-
-    <div class="candidate-cards">
-        {% for candidate in candidates %}
-        <div class="candidate-card">
-            <div class="candidate-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="candidate-info">
-                <h3>{{ candidate.name }}</h3>
-                <p>{{ candidate.position }}</p>
-                <div class="candidate-meta">
-                    <span class="status-badge {{ candidate.status|lower }}">
-                        {{ candidate.status }}
-                    </span>
-                    <span>{{ candidate.interview_date|format_date }}</span>
-                </div>
-            </div>
-            <a href="{{ url_for('view_candidate', id=candidate.id) }}" class="view-btn">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
-        {% endfor %}
+    
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Branch</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in candidates %}
+                <tr>
+                    <td>{{ candidate.name }}</td>
+                    <td>{{ candidate.position }}</td>
+                    <td>{{ candidate.branch }}</td>
+                    <td>
+                        <span class="status-badge {{ candidate.status|lower }}">
+                            {{ candidate.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('view_candidate', id=candidate.id) }}" class="btn btn-small">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('edit_candidate', id=candidate.id) }}" class="btn btn-small">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
