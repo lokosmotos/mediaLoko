@@ -40,4 +40,39 @@
                         <label for="status">Status</label>
                         <select id="status" name="status" class="form-control">
                             <option value="New" {% if candidate.status == 'New' %}selected{% endif %}>New</option>
-                            <option value="Interviewed" {% if candidate.status == 'Interviewed
+                            <option value="Interviewed" {% if candidate.status == 'Interviewed' %}selected{% endif %}>Interviewed</option>
+                            <option value="Hired" {% if candidate.status == 'Hired' %}selected{% endif %}>Hired</option>
+                            <option value="Rejected" {% if candidate.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="attitude_rating">Attitude Rating</label>
+                        <select id="attitude_rating" name="attitude_rating" class="form-control">
+                            <option value="1" {% if candidate.attitude_rating == '1' %}selected{% endif %}>1 Star</option>
+                            <option value="2" {% if candidate.attitude_rating == '2' %}selected{% endif %}>2 Stars</option>
+                            <option value="3" {% if candidate.attitude_rating == '3' %}selected{% endif %}>3 Stars</option>
+                            <option value="4" {% if candidate.attitude_rating == '4' %}selected{% endif %}>4 Stars</option>
+                            <option value="5" {% if candidate.attitude_rating == '5' %}selected{% endif %}>5 Stars</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" class="form-control" rows="4">{{ candidate.notes }}</textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{{ url_for('view_candidate', id=candidate.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
