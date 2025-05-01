@@ -1,74 +1,260 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syida Web - {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="icon" href="{{ url_for('static', filename='cat-icon.png') }}">
-</head>
-<body>
-    <!-- Animated Cat Paw Background Elements -->
-    <div class="cat-decoration" style="top:10%; left:5%; transform:rotate(20deg);"></div>
-    <div class="cat-decoration floating" style="top:70%; right:8%; transform:rotate(-15deg);"></div>
+{% extends "base.html" %}
+{% block title %}Candidate Management{% endblock %}
 
-    <header class="header">
-        <div class="container logo-container">
-            <img src="{{ url_for('static', filename='cat-logo.png') }}" alt="Syida Logo" class="logo">
-            <h1>Syida Hiring Tracker</h1>
+{% block content %}
+<div class="management-container">
+    <!-- Candidate Pool Organization -->
+    <div class="management-section">
+        <h2><i class="fas fa-users"></i> Candidate Pool</h2>
+        <div class="pool-filters">
+            <div class="filter-group">
+                <label>Filter by:</label>
+                <select class="status-filter">
+                    <option value="all">All Candidates</option>
+                    <option value="new">New Applicants</option>
+                    <option value="interviewed">Interviewed</option>
+                    <option value="hired">Hired</option>
+                    <option value="no-show">No Show</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Sort by:</label>
+                <select class="sort-filter">
+                    <option value="date">Interview Date</option>
+                    <option value="name">Name</option>
+                    <option value="position">Position</option>
+                </select>
+            </div>
+            <button class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
         </div>
-    </header>
-    
-    <nav class="nav">
-        <div class="container nav-container">
-            <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
-                <i class="fas fa-home"></i> Home
-            </a>
-            <a href="{{ url_for('add_candidate') }}" class="nav-link {% if request.path == '/add' %}active{% endif %}">
-                <i class="fas fa-user-plus"></i> Add Candidate
-            </a>
-            <a href="{{ url_for('candidate_list') }}" class="nav-link {% if request.path == '/candidates' %}active{% endif %}">
-                <i class="fas fa-users"></i> Candidates
-            </a>
-        </div>
-    </nav>
-    
-    <main class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-                        {{ message }}
+
+        <div class="candidate-pool">
+            {% for candidate in candidates %}
+            <div class="candidate-card {{ candidate.status|lower }}">
+                <div class="card-header">
+                    <div class="candidate-avatar">
+                        <span>{{ candidate.name|first|upper }}</span>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                    <div class="candidate-meta">
+                        <h3>{{ candidate.name }}</h3>
+                        <p>{{ candidate.position }}</p>
+                        <div class="meta-tags">
+                            <span class="tag {{ candidate.status|lower }}">{{ candidate.status }}</span>
+                            <span class="tag branch">{{ candidate.branch }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row">
+                        <label>Interview:</label>
+                        <span>{{ candidate.interview_date|format_date }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Start Date:</label>
+                        <span>{{ candidate.start_date|format_date if candidate.start_date else 'Not set' }}</span>
+                    </div>
+                    <div class="detail-row attitude">
+                        <label>Attitude:</label>
+                        <div class="attitude-rating">
+                            {% for i in range(5) %}
+                                <i class="fas fa-star {{ 'filled' if i < candidate.attitude_rating else '' }}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="action-btn message-btn" data-candidate="{{ candidate.id }}">
+                        <i class="fas fa-envelope"></i> Message
+                    </button>
+                    <div class="dropdown">
+                        <button class="action-btn more-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="#" class="reschedule-btn" data-id="{{ candidate.id }}">Reschedule</a>
+                            <a href="#" class="attitude-btn" data-id="{{ candidate.id }}">Rate Attitude</a>
+                            <a href="{{ url_for('view_candidate', id=candidate.id) }}">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Messaging System -->
+    <div class="management-section">
+        <h2><i class="fas fa-comments"></i> Communication Center</h2>
+        <div class="messaging-tabs">
+            <div class="tab active" data-tab="reminders">Reminders</div>
+            <div class="tab" data-tab="followups">Follow-ups</div>
+            <div class="tab" data-tab="templates">Templates</div>
+        </div>
         
-        {% block content %}{% endblock %}
-    </main>
-    
-    <footer class="footer">
-        <div class="container">
-            <p>© 2023 Syida Web - The Purr-fect Hiring Solution <i class="fas fa-paw"></i></p>
-            <div class="cat-signature">
-                <img src="{{ url_for('static', filename='cat-signature.png') }}" alt="Cat Signature" width="100">
+        <div class="tab-content active" id="reminders">
+            <div class="auto-message">
+                <h3><i class="fas fa-bell"></i> First Day Reminders</h3>
+                <p>Automatically send reminders 1 day before start date</p>
+                <div class="message-preview">
+                    <div class="preview-header">
+                        <span>Template Preview:</span>
+                        <button class="btn btn-small edit-template">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    <div class="preview-content">
+                        <p>Hi {{name}},</p>
+                        <p>Just a friendly reminder about your first day tomorrow at {{time}}.</p>
+                        <p>Please bring your {{documents}} and arrive at {{location}}.</p>
+                        <p>Looking forward to seeing you!</p>
+                        <p>- The Hiring Team</p>
+                    </div>
+                </div>
+                <div class="scheduled-count">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Will be sent to 3 candidates tomorrow</span>
+                </div>
             </div>
         </div>
-    </footer>
+        
+        <div class="tab-content" id="followups">
+            <div class="auto-message">
+                <h3><i class="fas fa-redo"></i> No-Show Follow-ups</h3>
+                <p>Send to candidates who didn't show up on their first day</p>
+                <div class="message-preview">
+                    <div class="preview-header">
+                        <span>Template Preview:</span>
+                        <button class="btn btn-small edit-template">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    <div class="preview-content">
+                        <p>Hi {{name}},</p>
+                        <p>We noticed you weren't able to attend your first day yesterday.</p>
+                        <p>Please let us know if there's any issue or if you'd like to reschedule.</p>
+                        <p>You can reply to this message or call {{contact}}.</p>
+                        <p>- The Hiring Team</p>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send Now to 2 Candidates
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-clock"></i> Schedule for Tomorrow
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        // Simple animation for form elements
-        document.querySelectorAll('.form-control').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentNode.classList.add('focused');
-            });
-            input.addEventListener('blur', function() {
-                this.parentNode.classList.remove('focused');
-            });
-        });
-    </script>
-</body>
-</html>
+    <!-- Attitude Tracking -->
+    <div class="management-section">
+        <h2><i class="fas fa-smile"></i> Attitude Assessment</h2>
+        <div class="attitude-guidelines">
+            <div class="guideline-card">
+                <h3><i class="fas fa-star"></i> Rating System</h3>
+                <div class="rating-examples">
+                    <div class="example">
+                        <div class="stars">
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>Poor (Unprofessional, rude)</p>
+                    </div>
+                    <div class="example">
+                        <div class="stars">
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>Fair (Needs improvement)</p>
+                    </div>
+                    <div class="example">
+                        <div class="stars">
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>Good (Standard behavior)</p>
+                    </div>
+                    <div class="example">
+                        <div class="stars">
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>Very Good (Positive attitude)</p>
+                    </div>
+                    <div class="example">
+                        <div class="stars">
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                            <i class="fas fa-star filled"></i>
+                        </div>
+                        <p>Excellent (Exceptional professionalism)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="guideline-card">
+                <h3><i class="fas fa-book"></i> Attitude Guidelines</h3>
+                <ul class="guidelines-list">
+                    <li><i class="fas fa-check"></i> Punctuality to interviews</li>
+                    <li><i class="fas fa-check"></i> Communication responsiveness</li>
+                    <li><i class="fas fa-check"></i> Professional language</li>
+                    <li><i class="fas fa-check"></i> Willingness to learn</li>
+                    <li><i class="fas fa-check"></i> Teamwork demonstration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Modal -->
+<div class="modal" id="messageModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3><i class="fas fa-envelope"></i> Send Message</h3>
+        <div class="form-group">
+            <label>Recipient</label>
+            <input type="text" id="recipient" readonly>
+        </div>
+        <div class="form-group">
+            <label>Message Template</label>
+            <select id="messageTemplate">
+                <option value="">Custom Message</option>
+                <option value="first_day_reminder">First Day Reminder</option>
+                <option value="no_show_followup">No-Show Follow-up</option>
+                <option value="reschedule_request">Reschedule Request</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Message Content</label>
+            <textarea id="messageContent" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Send Options</label>
+            <div class="send-options">
+                <label><input type="radio" name="sendOption" checked> Send Now</label>
+                <label><input type="radio" name="sendOption"> Schedule for <input type="datetime-local"></label>
+            </div>
+        </div>
+        <button class="btn btn-primary send-btn">
+            <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+    </div>
+</div>
+{% endblock %}
