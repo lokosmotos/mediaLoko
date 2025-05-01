@@ -156,7 +156,10 @@ def add_candidate():
         flash(f"{candidate['name']} added successfully!", 'success')
         return redirect(url_for('candidate_list'))
     
-    return render_template('add_candidate.html')
+    # GET request handling
+    today = datetime.today().strftime('%Y-%m-%d')
+    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
+    return render_template('add_candidate.html', min_date=today, max_date=max_date)
 
 @app.route('/add')
 def add_candidate():
