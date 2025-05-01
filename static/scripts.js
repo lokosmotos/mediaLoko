@@ -33,9 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Template selection
     document.getElementById('messageTemplate').addEventListener('change', (e) => {
         const templates = {
-            'first_day_reminder': `Hi {{name}},\n\nJust a reminder about your first day tomorrow. Please arrive at 9:00 AM at our main office.\n\nLooking forward to seeing you!\n\nBest regards,\nThe Hiring Team`,
-            'no_show_followup': `Hi {{name}},\n\nWe noticed you weren't able to attend your first day yesterday. Please let us know if you'd like to reschedule.\n\nBest regards,\nThe Hiring Team`,
-            'reschedule_request': `Hi {{name}},\n\nWe'd like to discuss rescheduling your start date. Please let us know your availability.\n\nBest regards,\nThe Hiring Team`
+            'first_day_reminder': `Hi {{name}},\n\nThis is a friendly reminder that your first day with us is tomorrow. Please arrive by 9:00 AM at our main office.\n\nWe’re excited to welcome you and look forward to seeing you.\n\nBest regards,\nThe Hiring Team`,
+            'no_show_followup': `Hi {{name}},\n\nWe noticed that you were unable to attend your first day yesterday. Please let us know if there were any issues or if you would like to reschedule.\n\nWe’re here to assist you.\n\nBest regards,\nThe Hiring Team`,
+            'reschedule_request': `Hi {{name}},\n\nWe’d like to discuss rescheduling your start date. Kindly share your availability so we can make the necessary arrangements.\n\nLooking forward to your response.\n\nBest regards,\nThe Hiring Team`
+
         };
         
         if(e.target.value && templates[e.target.value]) {
