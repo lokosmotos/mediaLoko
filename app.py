@@ -158,6 +158,12 @@ def add_candidate():
     
     return render_template('add_candidate.html')
 
+@app.route('/add')
+def add_candidate():
+    today = datetime.today().strftime('%Y-%m-%d')
+    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
+    return render_template('add_candidate.html', min_date=today, max_date=max_date)
+
 @app.route('/edit/<id>', methods=['GET', 'POST'])
 def edit_candidate(id):
     candidates = load_candidates()
