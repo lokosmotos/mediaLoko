@@ -89,6 +89,50 @@
       margin-top: 30px;
     }
 
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      padding: 10px 15px 10px 40px;
+      border-radius: 4px;
+      border: none;
+      background-color: var(--dark-light);
+      color: var(--light);
+      width: 250px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+    }
+
+    .filter-select {
+      padding: 10px 15px;
+      border-radius: 4px;
+      border: none;
+      background-color: var(--dark-light);
+      color: var(--light);
+      min-width: 200px;
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -133,6 +177,7 @@
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transition: all 0.3s;
+      position: relative;
     }
 
     .candidate-card:hover {
@@ -188,6 +233,11 @@
       color: var(--warning);
     }
 
+    .status.rejected {
+      background-color: rgba(244, 67, 54, 0.2);
+      color: var(--danger);
+    }
+
     .card-actions {
       display: flex;
       justify-content: space-between;
@@ -202,6 +252,14 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.8rem;
     }
 
     .btn-primary {
@@ -223,6 +281,24 @@
       background-color: rgba(255,255,255,0.1);
     }
 
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #e53935;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #43a047;
+    }
+
     /* Modal */
     .modal {
       display: none;
@@ -238,11 +314,11 @@
 
     .modal-content {
       background-color: var(--dark-light);
-      margin: 10% auto;
+      margin: 5% auto;
       padding: 30px;
       border-radius: 10px;
       width: 90%;
-      max-width: 500px;
+      max-width: 600px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       position: relative;
     }
@@ -310,6 +386,46 @@
       margin-top: 20px;
     }
 
+    .candidate-details {
+      margin-bottom: 20px;
+    }
+
+    .detail-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      width: 120px;
+      color: #aaa;
+    }
+
+    .detail-value {
+      flex: 1;
+    }
+
+    .notes-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .confirmation-modal {
+      text-align: center;
+    }
+
+    .confirmation-modal .modal-content {
+      max-width: 400px;
+    }
+
+    .confirmation-modal .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header-content {
@@ -323,8 +439,16 @@
       }
 
       .modal-content {
-        margin: 20% auto;
+        margin: 10% auto;
         padding: 20px;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .search-box input {
+        width: 100%;
       }
     }
   </style>
@@ -350,20 +474,39 @@
     <div class="dashboard">
       <h1>Hiring Dashboard</h1>
       
+      <div class="controls">
+        <div class="search-filter">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search candidates..." oninput="filterCandidates()">
+          </div>
+          <select id="statusFilter" class="filter-select" onchange="filterCandidates()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="interviewed">Interviewed</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openAddCandidateModal()">
+          <i class="fas fa-plus"></i> Add Candidate
+        </button>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <i class="fas fa-users"></i>
-          <h3>24</h3>
+          <h3 id="totalCandidates">0</h3>
           <p>Total Candidates</p>
         </div>
         <div class="stat-card">
           <i class="fas fa-calendar-check"></i>
-          <h3>5</h3>
+          <h3 id="upcomingInterviews">0</h3>
           <p>Upcoming Interviews</p>
         </div>
         <div class="stat-card">
           <i class="fas fa-thumbs-up"></i>
-          <h3>12</h3>
+          <h3 id="hiredCandidates">0</h3>
           <p>Hired Candidates</p>
         </div>
       </div>
@@ -390,6 +533,8 @@
           <option value="first_day_reminder">First Day Reminder</option>
           <option value="no_show_followup">No Show Follow-up</option>
           <option value="reschedule_request">Reschedule Request</option>
+          <option value="interview_invite">Interview Invitation</option>
+          <option value="job_offer">Job Offer</option>
         </select>
       </div>
 
@@ -409,13 +554,15 @@
     </div>
   </div>
 
-  <!-- Add Candidate Modal -->
-  <div id="addCandidateModal" class="modal">
+  <!-- Add/Edit Candidate Modal -->
+  <div id="candidateModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeModal('addCandidateModal')">&times;</span>
-      <h2><i class="fas fa-user-plus"></i> Add New Candidate</h2>
+      <span class="close-modal" onclick="closeModal('candidateModal')">&times;</span>
+      <h2><i class="fas fa-user-plus"></i> <span id="modalTitle">Add New Candidate</span></h2>
       
       <form id="candidateForm">
+        <input type="hidden" id="candidateId">
+        
         <div class="form-group">
           <label for="candidateName">Full Name</label>
           <input type="text" id="candidateName" class="form-control" required>
@@ -442,17 +589,28 @@
         </div>
         
         <div class="form-group">
+          <label for="candidateEmail">Email</label>
+          <input type="email" id="candidateEmail" class="form-control">
+        </div>
+        
+        <div class="form-group">
           <label for="candidateStatus">Status</label>
           <select id="candidateStatus" class="form-control" required>
             <option value="">-- Select Status --</option>
             <option value="pending">Pending</option>
             <option value="interviewed">Interviewed</option>
             <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
         
+        <div class="form-group">
+          <label for="candidateNotes">Notes</label>
+          <textarea id="candidateNotes" class="form-control" rows="4"></textarea>
+        </div>
+        
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('addCandidateModal')">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('candidateModal')">
             Cancel
           </button>
           <button type="submit" class="btn btn-primary">
@@ -463,35 +621,127 @@
     </div>
   </div>
 
+  <!-- Candidate Details Modal -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('detailsModal')">&times;</span>
+      <h2><i class="fas fa-user"></i> Candidate Details</h2>
+      
+      <div class="candidate-details">
+        <div class="detail-row">
+          <div class="detail-label">Name:</div>
+          <div class="detail-value" id="detailName"></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Position:</div>
+          <div class="detail-value" id="detailPosition"></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Location:</div>
+          <div class="detail-value" id="detailLocation"></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Phone:</div>
+          <div class="detail-value" id="detailPhone"></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Email:</div>
+          <div class="detail-value" id="detailEmail"></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Status:</div>
+          <div class="detail-value">
+            <span id="detailStatus" class="status"></span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Added:</div>
+          <div class="detail-value" id="detailDate"></div>
+        </div>
+      </div>
+      
+      <div class="notes-section">
+        <h4>Notes</h4>
+        <div id="detailNotes"></div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="closeModal('detailsModal')">
+          Close
+        </button>
+        <button class="btn btn-primary" id="editCandidateBtn">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-danger" id="deleteCandidateBtn">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal confirmation-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('confirmModal')">&times;</span>
+      <h2><i class="fas fa-exclamation-triangle"></i> Confirm Action</h2>
+      <p id="confirmMessage">Are you sure you want to perform this action?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('confirmModal')">
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="confirmActionBtn">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Sample candidate data
-    const candidates = [
+    // Sample candidate data with localStorage integration
+    let candidates = JSON.parse(localStorage.getItem('candidates')) || [
       {
         id: 1,
         name: "Ali bin Ahmad",
         position: "Sales Executive",
         location: "KL Branch",
-        date: "15 Jun 2023",
+        phone: "60123456789",
+        email: "ali.ahmad@example.com",
         status: "hired",
-        phone: "60123456789"
+        date: "15 Jun 2023",
+        notes: "Excellent communication skills. Will start on 1st July."
       },
       {
         id: 2,
         name: "Siti Nurhaliza",
         position: "Marketing Manager",
         location: "PJ Branch",
-        date: "18 Jun 2023",
+        phone: "60112233445",
+        email: "siti.n@example.com",
         status: "interviewed",
-        phone: "60112233445"
+        date: "18 Jun 2023",
+        notes: "Second interview scheduled for next week."
       },
       {
         id: 3,
         name: "Raj Kumar",
         position: "IT Specialist",
         location: "Cyberjaya",
-        date: "20 Jun 2023",
+        phone: "60113344556",
+        email: "raj.k@example.com",
         status: "pending",
-        phone: "60113344556"
+        date: "20 Jun 2023",
+        notes: "Waiting for technical test results."
+      },
+      {
+        id: 4,
+        name: "Mei Ling",
+        position: "HR Executive",
+        location: "KL Branch",
+        phone: "60114455667",
+        email: "mei.ling@example.com",
+        status: "rejected",
+        date: "22 Jun 2023",
+        notes: "Candidate withdrew application."
       }
     ];
 
@@ -499,29 +749,50 @@
     const templates = {
       first_day_reminder: `Hi {name}, this is a friendly reminder that your first working day is tomorrow. Please arrive by 9:30 AM at your assigned location. Bring your IC and dress professionally. Good luck!`,
       no_show_followup: `Hi {name}, we noticed you didn't show up today. Is everything alright? Please update us if you wish to continue your job placement.`,
-      reschedule_request: `Hi {name}, we understand you may need to reschedule. Let us know your availability so we can make new arrangements. Thank you!`
+      reschedule_request: `Hi {name}, we understand you may need to reschedule. Let us know your availability so we can make new arrangements. Thank you!`,
+      interview_invite: `Hi {name}, we're pleased to invite you for an interview for the {position} position at {location}. Please confirm your availability for {date} at {time}.`,
+      job_offer: `Hi {name}, we're excited to offer you the {position} position! Please review the attached offer letter and let us know if you have any questions.`
     };
 
     // DOM elements
     const candidatesContainer = document.getElementById("candidatesContainer");
     const messageModal = document.getElementById("messageModal");
-    const addCandidateModal = document.getElementById("addCandidateModal");
+    const candidateModal = document.getElementById("candidateModal");
+    const detailsModal = document.getElementById("detailsModal");
+    const confirmModal = document.getElementById("confirmModal");
     const templateSelector = document.getElementById("messageTemplate");
     const messageBox = document.getElementById("messageContent");
     const phoneInput = document.getElementById("phoneNumber");
     const recipientInput = document.getElementById("recipient");
     const candidateForm = document.getElementById("candidateForm");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const totalCandidatesEl = document.getElementById("totalCandidates");
+    const hiredCandidatesEl = document.getElementById("hiredCandidates");
+    const upcomingInterviewsEl = document.getElementById("upcomingInterviews");
+
+    // Current candidate being viewed/edited
+    let currentCandidateId = null;
 
     // Initialize the page
     document.addEventListener("DOMContentLoaded", function() {
       renderCandidates();
+      updateStats();
       
       // Handle template change
       templateSelector.addEventListener("change", () => {
         const selected = templateSelector.value;
         const name = recipientInput.value || "there";
         if (templates[selected]) {
-          const message = templates[selected].replace("{name}", name);
+          let message = templates[selected].replace("{name}", name);
+          
+          // Replace other placeholders if they exist
+          const candidate = candidates.find(c => c.id === currentCandidateId);
+          if (candidate) {
+            message = message.replace("{position}", candidate.position)
+                            .replace("{location}", candidate.location);
+          }
+          
           messageBox.value = message;
         } else {
           messageBox.value = "";
@@ -548,33 +819,86 @@
         window.open(whatsappURL, "_blank");
       });
 
-      // Handle form submission
+      // Handle form submission (add/edit)
       candidateForm.addEventListener("submit", function(e) {
         e.preventDefault();
         
-        const newCandidate = {
-          id: candidates.length + 1,
-          name: document.getElementById("candidateName").value,
-          position: document.getElementById("candidatePosition").value,
-          location: document.getElementById("candidateLocation").value,
-          date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-          status: document.getElementById("candidateStatus").value,
-          phone: document.getElementById("candidatePhone").value
-        };
+        const id = document.getElementById("candidateId").value;
+        const name = document.getElementById("candidateName").value;
+        const position = document.getElementById("candidatePosition").value;
+        const location = document.getElementById("candidateLocation").value;
+        const phone = document.getElementById("candidatePhone").value;
+        const email = document.getElementById("candidateEmail").value;
+        const status = document.getElementById("candidateStatus").value;
+        const notes = document.getElementById("candidateNotes").value;
         
-        candidates.push(newCandidate);
+        if (id) {
+          // Edit existing candidate
+          const index = candidates.findIndex(c => c.id == id);
+          if (index !== -1) {
+            candidates[index] = {
+              ...candidates[index],
+              name,
+              position,
+              location,
+              phone,
+              email,
+              status,
+              notes
+            };
+          }
+        } else {
+          // Add new candidate
+          const newCandidate = {
+            id: Date.now(), // Use timestamp as ID
+            name,
+            position,
+            location,
+            phone,
+            email,
+            status,
+            notes,
+            date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+          };
+          
+          candidates.push(newCandidate);
+        }
+        
+        saveToLocalStorage();
         renderCandidates();
-        closeModal("addCandidateModal");
+        updateStats();
+        closeModal("candidateModal");
         candidateForm.reset();
-        alert("Candidate added successfully!");
       });
+
+      // Edit button in details modal
+      document.getElementById("editCandidateBtn").addEventListener("click", function() {
+        closeModal("detailsModal");
+        openEditCandidateModal(currentCandidateId);
+      });
+
+      // Delete button in details modal
+      document.getElementById("deleteCandidateBtn").addEventListener("click", function() {
+        showDeleteConfirmation(currentCandidateId);
+      });
+
+      // Search input
+      searchInput.addEventListener("input", filterCandidates);
+      
+      // Status filter
+      statusFilter.addEventListener("change", filterCandidates);
     });
 
     // Render candidate cards
-    function renderCandidates() {
+    function renderCandidates(candidatesToRender = candidates) {
       candidatesContainer.innerHTML = "";
       
-      candidates.forEach(candidate => {
+      if (candidatesToRender.length === 0) {
+        candidatesContainer.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No candidates found</p>';
+        return;
+      }
+      
+      candidatesToRender.forEach(candidate => {
         const statusClass = getStatusClass(candidate.status);
         const statusText = getStatusText(candidate.status);
         
@@ -593,10 +917,10 @@
             <span class="status ${statusClass}">${statusText}</span>
           </div>
           <div class="card-actions">
-            <button class="btn btn-primary" onclick="openMessageModal('${candidate.name}', '${candidate.phone}')">
+            <button class="btn btn-primary" onclick="openMessageModal('${candidate.name}', '${candidate.phone}', ${candidate.id})">
               <i class="fas fa-comment"></i> Message
             </button>
-            <button class="btn btn-secondary">
+            <button class="btn btn-secondary" onclick="openDetailsModal(${candidate.id})">
               <i class="fas fa-eye"></i> View
             </button>
           </div>
@@ -606,11 +930,122 @@
       });
     }
 
+    // Open message modal
+    function openMessageModal(name, phone, candidateId = null) {
+      currentCandidateId = candidateId;
+      recipientInput.value = name || "";
+      phoneInput.value = phone || "";
+      templateSelector.value = "";
+      messageBox.value = "";
+      messageModal.style.display = "block";
+    }
+
+    // Open add candidate modal
+    function openAddCandidateModal() {
+      document.getElementById("modalTitle").textContent = "Add New Candidate";
+      document.getElementById("candidateId").value = "";
+      candidateForm.reset();
+      currentCandidateId = null;
+      candidateModal.style.display = "block";
+    }
+
+    // Open edit candidate modal
+    function openEditCandidateModal(id) {
+      const candidate = candidates.find(c => c.id == id);
+      if (!candidate) return;
+      
+      document.getElementById("modalTitle").textContent = "Edit Candidate";
+      document.getElementById("candidateId").value = candidate.id;
+      document.getElementById("candidateName").value = candidate.name;
+      document.getElementById("candidatePosition").value = candidate.position;
+      document.getElementById("candidateLocation").value = candidate.location;
+      document.getElementById("candidatePhone").value = candidate.phone;
+      document.getElementById("candidateEmail").value = candidate.email || "";
+      document.getElementById("candidateStatus").value = candidate.status;
+      document.getElementById("candidateNotes").value = candidate.notes || "";
+      
+      currentCandidateId = id;
+      candidateModal.style.display = "block";
+    }
+
+    // Open details modal
+    function openDetailsModal(id) {
+      const candidate = candidates.find(c => c.id == id);
+      if (!candidate) return;
+      
+      document.getElementById("detailName").textContent = candidate.name;
+      document.getElementById("detailPosition").textContent = candidate.position;
+      document.getElementById("detailLocation").textContent = candidate.location;
+      document.getElementById("detailPhone").textContent = candidate.phone;
+      document.getElementById("detailEmail").textContent = candidate.email || "N/A";
+      document.getElementById("detailDate").textContent = candidate.date;
+      
+      const statusEl = document.getElementById("detailStatus");
+      statusEl.textContent = getStatusText(candidate.status);
+      statusEl.className = "status " + getStatusClass(candidate.status);
+      
+      document.getElementById("detailNotes").textContent = candidate.notes || "No notes available.";
+      
+      currentCandidateId = id;
+      detailsModal.style.display = "block";
+    }
+
+    // Show delete confirmation
+    function showDeleteConfirmation(id) {
+      const candidate = candidates.find(c => c.id == id);
+      if (!candidate) return;
+      
+      document.getElementById("confirmMessage").textContent = 
+        `Are you sure you want to delete ${candidate.name} (${candidate.position})? This action cannot be undone.`;
+      
+      const confirmBtn = document.getElementById("confirmActionBtn");
+      confirmBtn.onclick = function() {
+        deleteCandidate(id);
+        closeModal("confirmModal");
+      };
+      
+      confirmModal.style.display = "block";
+    }
+
+    // Delete candidate
+    function deleteCandidate(id) {
+      candidates = candidates.filter(c => c.id != id);
+      saveToLocalStorage();
+      renderCandidates();
+      updateStats();
+      closeModal("detailsModal");
+    }
+
+    // Filter candidates based on search and status
+    function filterCandidates() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const status = statusFilter.value;
+      
+      let filtered = candidates;
+      
+      // Filter by status
+      if (status) {
+        filtered = filtered.filter(c => c.status === status);
+      }
+      
+      // Filter by search term
+      if (searchTerm) {
+        filtered = filtered.filter(c => 
+          c.name.toLowerCase().includes(searchTerm) || 
+          c.position.toLowerCase().includes(searchTerm) ||
+          c.location.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      renderCandidates(filtered);
+    }
+
     // Helper functions for status
     function getStatusClass(status) {
       switch(status) {
         case "hired": return "hired";
         case "interviewed": return "interviewed";
+        case "rejected": return "rejected";
         default: return "pending";
       }
     }
@@ -619,23 +1054,28 @@
       switch(status) {
         case "hired": return "Hired";
         case "interviewed": return "Interviewed";
+        case "rejected": return "Rejected";
         default: return "Pending";
       }
     }
 
-    // Modal functions
-    function openMessageModal(name, phone) {
-      recipientInput.value = name || "";
-      phoneInput.value = phone || "";
-      templateSelector.value = "";
-      messageBox.value = "";
-      messageModal.style.display = "block";
+    // Update statistics
+    function updateStats() {
+      totalCandidatesEl.textContent = candidates.length;
+      hiredCandidatesEl.textContent = candidates.filter(c => c.status === "hired").length;
+      
+      // For demo purposes - in a real app you'd check actual interview dates
+      upcomingInterviewsEl.textContent = candidates.filter(c => 
+        c.status === "interviewed" || c.status === "pending"
+      ).length;
     }
 
-    function openAddCandidateModal() {
-      addCandidateModal.style.display = "block";
+    // Save to localStorage
+    function saveToLocalStorage() {
+      localStorage.setItem('candidates', JSON.stringify(candidates));
     }
 
+    // Close modal
     function closeModal(modalId) {
       document.getElementById(modalId).style.display = "none";
     }
