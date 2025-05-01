@@ -1,274 +1,191 @@
-:root {
-    --primary: #e50914;
-    --secondary: #221f1f;
-    --accent: #f5f5f1;
-    --dark: #000000;
-    --light: #ffffff;
-    --success: #4CAF50;
-    --warning: #FFC107;
-    --danger: #F44336;
-    --info: #2196F3;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: var(--secondary);
-    color: var(--accent);
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Header */
-.header {
-    background-color: var(--dark);
-    padding: 15px 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary);
-    text-decoration: none;
-}
-
-.nav-links {
-    display: flex;
-    gap: 20px;
-}
-
-.nav-links a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-.nav-links a:hover {
-    color: var(--primary);
-}
-
-/* Cards */
-.card {
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-/* Buttons */
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-primary {
-    background-color: var(--primary);
-    color: var(--light);
-}
-
-.btn-primary:hover {
-    background-color: #f40612;
-}
-
-.btn-secondary {
-    background-color: var(--secondary);
-    color: var(--accent);
-    border: 1px solid var(--accent);
-}
-
-.btn-secondary:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Forms */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid #333;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: var(--accent);
-    font-size: 16px;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-/* Tables */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-}
-
-.table th, .table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #333;
-}
-
-.table th {
-    background-color: rgba(0, 0, 0, 0.5);
-    font-weight: 600;
-}
-
-.table tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Dashboard */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.stat-card {
-    text-align: center;
-    padding: 30px;
-}
-
-.stat-card i {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    color: var(--primary);
-}
-
-.stat-card h3 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-}
-
-/* Candidate Cards */
-.candidate-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.candidate-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.candidate-card img {
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.candidate-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-}
-
-/* Date Input Styles */
-.date-input-group {
-    position: relative;
-}
-
-.date-input-container {
-    position: relative;
-}
-
-.date-input {
-    padding-right: 40px; /* Space for icon */
-    appearance: none; /* Remove default styling */
-}
-
-.date-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--primary);
-    pointer-events: none;
-}
-
-.date-hint {
-    display: block;
-    margin-top: 5px;
-    color: #666;
-    font-size: 0.8rem;
-}
-
-/* Modern date input styling */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    background: transparent;
-    bottom: 0;
-    color: transparent;
-    cursor: pointer;
-    height: auto;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: auto;
-}
-
-/* Focus state */
-.date-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Message Modal</title>
+  <style>
+    /* INSERT YOUR CSS STYLES HERE */
+    /* Pasting your CSS exactly as-is */
+    :root {
+      --primary: #e50914;
+      --secondary: #221f1f;
+      --accent: #f5f5f1;
+      --dark: #000000;
+      --light: #ffffff;
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --danger: #F44336;
+      --info: #2196F3;
     }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: var(--secondary);
+      color: var(--accent);
+      line-height: 1.6;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.7);
+    }
+
+    .modal-content {
+      background-color: #111;
+      margin: 10% auto;
+      padding: 30px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      color: var(--light);
+      cursor: pointer;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: var(--accent);
+    }
+
+    button#sendWhatsApp {
+      background-color: var(--primary);
+      color: var(--light);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button#sendWhatsApp:hover {
+      background-color: #f40612;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Trigger button (for example purpose) -->
+<button onclick="openMessageModal('Ali', '60123456789')">Open Message Modal</button>
+
+<!-- Modal -->
+<div id="messageModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <h2>Send WhatsApp Message</h2>
+
+    <input type="text" id="recipient" hidden>
     
-    .nav {
-        flex-direction: column;
-        gap: 15px;
+    <label for="messageTemplate">Template</label>
+    <select id="messageTemplate">
+      <option value="">-- Select Template --</option>
+      <option value="first_day_reminder">First Day Reminder</option>
+      <option value="no_show_followup">No Show Follow-up</option>
+      <option value="reschedule_request">Reschedule Request</option>
+    </select>
+
+    <label for="messageContent">Message</label>
+    <textarea id="messageContent" rows="6" placeholder="Message will appear here..."></textarea>
+
+    <label for="phoneNumber">Phone Number</label>
+    <input type="text" id="phoneNumber" placeholder="Enter phone number (e.g. 60123456789)">
+
+    <button id="sendWhatsApp">Send via WhatsApp</button>
+  </div>
+</div>
+
+<script>
+  // Templates
+  const templates = {
+    first_day_reminder: `Hi {name}, this is a friendly reminder that your first working day is tomorrow. Please arrive by 9:30 AM at your assigned location. Bring your IC and dress professionally. Good luck!`,
+    no_show_followup: `Hi {name}, we noticed you didn’t show up today. Is everything alright? Please update us if you wish to continue your job placement.`,
+    reschedule_request: `Hi {name}, we understand you may need to reschedule. Let us know your availability so we can make new arrangements. Thank you!`
+  };
+
+  const modal = document.getElementById("messageModal");
+  const templateSelector = document.getElementById("messageTemplate");
+  const messageBox = document.getElementById("messageContent");
+  const phoneInput = document.getElementById("phoneNumber");
+  const recipientInput = document.getElementById("recipient");
+
+  // Handle template change
+  templateSelector.addEventListener("change", () => {
+    const selected = templateSelector.value;
+    const name = recipientInput.value || "there";
+    if (templates[selected]) {
+      const message = templates[selected].replace("{name}", name);
+      messageBox.value = message;
+    } else {
+      messageBox.value = "";
     }
-}
+  });
+
+  // WhatsApp send
+  document.getElementById("sendWhatsApp").addEventListener("click", () => {
+    const phone = phoneInput.value.trim();
+    const message = messageBox.value.trim();
+    if (!phone || !message) {
+      alert("Phone number and message cannot be empty.");
+      return;
+    }
+
+    const encodedMsg = encodeURIComponent(message);
+    const whatsappURL = `https://wa.me/${phone}?text=${encodedMsg}`;
+    window.open(whatsappURL, "_blank");
+  });
+
+  // Open modal with name and phone
+  function openMessageModal(name, phone) {
+    recipientInput.value = name || "";
+    phoneInput.value = phone || "";
+    templateSelector.value = "";
+    messageBox.value = "";
+    modal.style.display = "block";
+  }
+
+  // Close modal
+  function closeModal() {
+    modal.style.display = "none";
+  }
+
+  // Optional: Close modal if user clicks outside it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      closeModal();
+    }
+  }
+</script>
+</body>
+</html>
