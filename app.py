@@ -79,7 +79,7 @@ def get_dashboard_stats(candidates):
                 pass
     
     # Generate recent activities (last 5)
-    for candidate in candidates[-5:][::-1]:  # Get last 5 and reverse order
+    for candidate in candidates[-5:][::-1]:
         activity = {
             'icon': 'user-check' if candidate.get('status', '').lower() == 'hired' else 'calendar-alt',
             'description': f"{candidate['name']} - {candidate['position']}",
@@ -106,7 +106,7 @@ app.jinja_env.filters['format_date'] = format_date
 def index():
     candidates = load_candidates()
     stats = get_dashboard_stats(candidates)
-    return render_template('index.html', 
+    return render_template('index.html',
                          candidates=candidates,
                          stats=stats,
                          recent_candidates=candidates[-3:])
@@ -128,7 +128,7 @@ def view_candidate(id):
 @app.route('/add', methods=['GET', 'POST'])
 def add_candidate():
     today = datetime.today().strftime('%Y-%m-%d')
-    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
+    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')
     
     if request.method == 'POST':
         candidate = {
@@ -164,7 +164,7 @@ def add_candidate():
 @app.route('/edit/<id>', methods=['GET', 'POST'])
 def edit_candidate(id):
     candidates = load_candidates()
-    candidate = next((c for c in candidates if c['id'] == id), None
+    candidate = next((c for c in candidates if c['id'] == id), None)
     
     if not candidate:
         flash('Candidate not found!', 'danger')
@@ -200,7 +200,7 @@ def edit_candidate(id):
 @app.route('/delete/<id>', methods=['POST'])
 def delete_candidate(id):
     candidates = load_candidates()
-    candidate = next((c for c in candidates if c['id'] == id), None
+    candidate = next((c for c in candidates if c['id'] == id), None)
     
     if not candidate:
         flash('Candidate not found!', 'danger')
