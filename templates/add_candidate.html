@@ -30,11 +30,23 @@
                     </div>
                 </div>
                 
-                <div class="form-column">
-                    <div class="form-group">
-                        <label for="interview_date">Interview Date</label>
-                        <input type="date" id="interview_date" name="interview_date" class="form-control" required>
-                    </div>
+                <<div class="form-column">
+    <div class="form-group date-input-group">
+        <label for="interview_date">Interview Date*</label>
+        <div class="date-input-container">
+            <input 
+                type="date" 
+                id="interview_date" 
+                name="interview_date" 
+                class="form-control date-input"
+                required
+                min="{{ min_date }}"
+                max="{{ max_date }}"
+            >
+            <i class="fas fa-calendar-alt date-icon"></i>
+        </div>
+        <small class="date-hint">Select a date between {{ min_date }} and {{ max_date }}</small>
+    </div>
                     
                     <div class="form-group">
                         <label for="status">Status</label>
