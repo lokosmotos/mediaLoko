@@ -2,55 +2,101 @@
 {% block title %}Syida Hiring Tracker{% endblock %}
 
 {% block content %}
-<div class="dashboard">
-    <!-- Welcome Card -->
-    <div class="welcome-card">
-        <div class="welcome-content">
-            <h2><i class="fas fa-paw"></i> Welcome to Syida Hiring Tracker</h2>
-            <p>Manage your feline workforce candidates with ease</p>
-            <div class="welcome-stats">
-                <div class="stat-card">
+<div class="modern-dashboard" style="background-image: url('{{ url_for('static', filename='modern-bg.jpg') }}')">
+    <!-- Glassmorphism Header -->
+    <div class="glass-header">
+        <h1><i class="fas fa-paw"></i> Syida Hiring Tracker</h1>
+        <p class="subtitle">Purr-fect talent management for your feline team</p>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Welcome Card -->
+        <div class="glass-card welcome-card">
+            <div class="welcome-content">
+                <h2><i class="fas fa-cat"></i> Welcome Back!</h2>
+                <p>You have <strong>{{ upcoming_interviews }}</strong> interviews coming up this week</p>
+                <div class="welcome-stats">
+                    <div class="stat-bubble">
+                        <span class="count">{{ candidates|length }}</span>
+                        <span class="label">Total Candidates</span>
+                    </div>
+                    <div class="stat-bubble">
+                        <span class="count">{{ recent_activities|length }}</span>
+                        <span class="label">Recent Activities</span>
+                    </div>
+                </div>
+            </div>
+            <div class="welcome-image">
+                <img src="{{ url_for('static', filename='cool-cat.png') }}" alt="Cool Cat Mascot">
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass-card actions-card">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="{{ url_for('add_candidate') }}" class="action-btn primary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add Candidate</span>
+                </a>
+                <a href="{{ url_for('candidate_list') }}" class="action-btn secondary">
                     <i class="fas fa-users"></i>
-                    <span class="count">{{ candidates|length }}</span>
-                    <span class="label">Total Candidates</span>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-calendar-check"></i>
-                    <span class="count">{{ upcoming_interviews }}</span>
-                    <span class="label">Upcoming Interviews</span>
-                </div>
+                    <span>View All</span>
+                </a>
+                <a href="#" class="action-btn accent">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
             </div>
         </div>
-        <div class="welcome-image">
-            <img src="{{ url_for('static', filename='cat-hiring.png') }}" alt="Hiring Cat">
-        </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <a href="{{ url_for('add_candidate') }}" class="action-card">
-            <i class="fas fa-user-plus"></i>
-            <span>Add New Candidate</span>
-        </a>
-        <a href="{{ url_for('candidate_list') }}" class="action-card">
-            <i class="fas fa-list"></i>
-            <span>View All Candidates</span>
-        </a>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="recent-activity">
-        <h3><i class="fas fa-clock"></i> Recent Activity</h3>
-        <div class="activity-list">
-            {% for activity in recent_activities %}
-            <div class="activity-item">
-                <i class="fas fa-{{ activity.icon }}"></i>
-                <div class="activity-details">
-                    <p>{{ activity.description }}</p>
-                    <small>{{ activity.time }}</small>
+        <!-- Activity Feed -->
+        <div class="glass-card activity-card">
+            <div class="activity-header">
+                <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                <div class="time-filter">
+                    <span class="active">Today</span>
+                    <span>Week</span>
+                    <span>Month</span>
                 </div>
             </div>
-            {% endfor %}
+            <div class="activity-feed">
+                {% for activity in recent_activities %}
+                <div class="activity-item">
+                    <div class="activity-icon {{ activity.type }}">
+                        <i class="fas fa-{{ activity.icon }}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p>{{ activity.description }}</p>
+                        <span class="activity-time">{{ activity.time }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="glass-card stats-card">
+            <h3><i class="fas fa-chart-pie"></i> Hiring Stats</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #FF7E33">{{ stats.hired }}</div>
+                    <div class="stat-label">Hired</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #4CAF50">{{ stats.interviewed }}</div>
+                    <div class="stat-label">Interviewed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #2196F3">{{ stats.pending }}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ stats.hire_rate }}%; background: linear-gradient(90deg, #FF7E33, #FFD166);"></div>
+                <span>Hire Rate: {{ stats.hire_rate }}%</span>
+            </div>
         </div>
     </div>
 </div>
