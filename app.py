@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import csv
 import uuid
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 
 app = Flask(__name__)
@@ -127,6 +127,9 @@ def view_candidate(id):
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_candidate():
+    today = datetime.today().strftime('%Y-%m-%d')
+    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
+    
     if request.method == 'POST':
         candidate = {
             'id': str(uuid.uuid4()),
@@ -156,21 +159,12 @@ def add_candidate():
         flash(f"{candidate['name']} added successfully!", 'success')
         return redirect(url_for('candidate_list'))
     
-    # GET request handling
-    today = datetime.today().strftime('%Y-%m-%d')
-    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
-    return render_template('add_candidate.html', min_date=today, max_date=max_date)
-
-@app.route('/add')
-def add_candidate():
-    today = datetime.today().strftime('%Y-%m-%d')
-    max_date = (datetime.today() + timedelta(days=365)).strftime('%Y-%m-%d')  # 1 year from now
     return render_template('add_candidate.html', min_date=today, max_date=max_date)
 
 @app.route('/edit/<id>', methods=['GET', 'POST'])
 def edit_candidate(id):
     candidates = load_candidates()
-    candidate = next((c for c in candidates if c['id'] == id), None)
+    candidate = next((c for c in candidates if c['id'] == id), None
     
     if not candidate:
         flash('Candidate not found!', 'danger')
@@ -206,7 +200,7 @@ def edit_candidate(id):
 @app.route('/delete/<id>', methods=['POST'])
 def delete_candidate(id):
     candidates = load_candidates()
-    candidate = next((c for c in candidates if c['id'] == id), None)
+    candidate = next((c for c in candidates if c['id'] == id), None
     
     if not candidate:
         flash('Candidate not found!', 'danger')
