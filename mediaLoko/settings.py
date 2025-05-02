@@ -53,9 +53,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mediaLoko.wsgi.application'  # UPDATED: Match your project name
 
-# Database (UPDATED: Simpler syntax for Render)
-DATABASES = {
-    'default': dj_database_url.parse(config('DATABASE_URL'))
+ATABASES = {
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default='sqlite:///db.sqlite3')  # fallback to SQLite if env var is missing
+    )
 }
 
 # Password validation (NEW: Required for production)
