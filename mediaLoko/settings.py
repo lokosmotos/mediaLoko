@@ -2,15 +2,15 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 
-# Build paths
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
-SECRET_KEY = config('SECRET_KEY')  # Set in Render environment variables
-DEBUG = config('DEBUG', default=False, cast=bool)  # DEBUG=False in production!
-ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')  # Add your Render URL (e.g., 'yourapp.onrender.com')
+# Security settings
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
 
-# Application Definition (NEW)
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,13 +18,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.runserver_nostatic',  # Whitenoise for static files
-    # Your apps here (e.g., 'myapp')
+    'whitenoise.runserver_nostatic',  # Whitenoise for dev
+    'candidates',  # Your app name — make sure this is correct
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # NEW: Must be below SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Enables static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -33,7 +33,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'mediaLoko.urls'  # UPDATED: Replace 'mediaLoko' with your project name
+ROOT_URLCONF = 'mediaLoko.urls'  # Change 'mediaLoko' if your project has a different name
 
 TEMPLATES = [
     {
@@ -51,45 +51,39 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mediaLoko.wsgi.application'  # UPDATED: Match your project name
+WSGI_APPLICATION = 'mediaLoko.wsgi.application'  # Change if your project name differs
 
-ATABASES = {
+# ✅ Fixed: DATABASES key was misspelled before
+DATABASES = {
     'default': dj_database_url.parse(
-        config('DATABASE_URL', default='sqlite:///db.sqlite3')  # fallback to SQLite if env var is missing
+        config('DATABASE_URL', default='sqlite:///db.sqlite3')
     )
 }
 
-# Password validation (NEW: Required for production)
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
+# Localization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static & Media Files (UPDATED: Whitenoise optimization)
+# Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # NEW
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Security (NEW: Critical for production)
+# Security settings for production
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
