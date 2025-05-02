@@ -1,4 +1,6 @@
-Django>=4.2
+Django>=4.2,<5.0
 gunicorn
+dj-database-url
 psycopg2-binary
-python-decouple
+whitenoise
+python-dotenv
