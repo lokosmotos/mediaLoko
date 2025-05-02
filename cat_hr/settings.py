@@ -1,6 +1,4 @@
 INSTALLED_APPS = [
     ...
-    'candidates.apps.CandidatesConfig',
+    'candidates.apps.CandidatesConfig',  # ← Full path to app config
 ]
-
-WSGI_APPLICATION = 'cat_hr.wsgi.application'
